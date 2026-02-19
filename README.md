@@ -2,7 +2,7 @@
 
 ## About
 
-Another REST client plugin for Neovim that nobody asked for.
+Another REST client plugin for Neovim
 
 Essentially just a plugin for turning lua tables into curl commands.
 Feature wise, Anrcy is pretty minimal and it is probably a bit clunky. Not all curl
@@ -10,7 +10,7 @@ features and flags are properly implemented but it suits my needs.
 
 <br>
 
-## But why?
+## Why?
 
 This plugin was developed for personal use, not to fix a problem that
 hasn't been fixed already. There are plenty of other, more complete plugins out there. 
@@ -19,9 +19,9 @@ For me, the other plugins were overkill and I felt that this would be a fun chal
 When creating this I had a few goals in mind: 
 
 - lua object structure that is easy to use in neovim
-- quickly and easily "sketch" out a request anywhere
-- easily create tests that run against the response data
-- display the response and test results in a buffer
+- quickly and easily "sketch" out a request and run it anywhere
+- easily add tests that are run against the response
+- straight forward UI - display the response and test results in a single simple buffer
 
 
 <br>
@@ -62,19 +62,70 @@ opts = {
 
 ## Usage
 
-Anrcy uses lua tables to build curl commands. 
-You use neovim to visually select the table(s) and run `:Anrcy` 
-
-The response data, test results, and anything else returned from the http call will 
-be displayed in its own buffer.
+Anrcy uses lua tables to build curl commands. You use neovim to visually select the table(s) and run `:Anrcy` 
+The response data, test results, and anything else returned from the request will be displayed in its own buffer. One request, one buffer.
 
 <i>NOTE: Selected text is wrapped in an array internally. So to run multiple jobs
 they should be separated by a comma.<i>
 
+Since you run Anrcy by visually selecting a block, your request table can be stored as text anywhere.
+Here is an example of a request stored in a comment above a function call for quick testing.
+
+<br>
+
+```js
+/*
+ 
+{ 
+    name = "ditto", 
+    type = "GET",
+    url = "https://pokeapi.co/api/v2/pokemon/ditto"
+}
+
+*/
+ditto: async () => {
+    const response = await fetch("https://pokeapi.co/api/v2/pokemon/ditto");
+    return await response.json();
+}
+```
+
+<br>
+
+Just visually select the lua portion of the comment and run ```:Anrcy``` to see the results.
+
+
+### Anrcy API
+
+
+Anrcy also exposes its ```run_jobs``` function allowing you to make calls from lua code directly.
+
+For example, you can make a keymap that makes a specific request like this:
+
+```lua
+vim.keymap.set(
+    { 'n' },
+    '<leader>d',
+    function ()
+        require("anrcy").run_jobs({
+            {
+                name = "ditto",
+                type = "GET",
+                url = "https://pokeapi.co/api/v2/pokemon/ditto",
+            },
+        })
+    end,
+    { desc = 'request ditto information' }
+)
+```
+
+
+
+
+
 <br>
 <br>
 
-### Commands 
+## Commands 
 
 |Command|Description|
 |-------|-----------|
@@ -89,7 +140,10 @@ they should be separated by a comma.<i>
 <br>
 <br>
 
-### Job Template
+## Job Template
+
+Most of the fields for the job template are optional, ```type``` and ```url``` are all that is required.
+
 
 ```lua
 ---@type anrcy.Job
@@ -159,11 +213,12 @@ they should be separated by a comma.<i>
 <br>
 <br>
 
-### Examples
+## Examples
 
 ```lua
 -- generated curl: 
 -- curl -s -X GET --get https://pokeapi.co/api/v2/pokemon/pikachu
+
 { 
     name = "pikachu", 
     type = "GET", 
@@ -176,7 +231,7 @@ they should be separated by a comma.<i>
 
 ```lua
 -- generated curl: 
--- curl -s -i -X GET --get --header "apikey:1234567890" https://pokeapi.co/api/v2/pokemon/ditto
+-- curl -s -i -X GET --get --header "name:value" https://pokeapi.co/api/v2/pokemon/ditto
 
 -- more complex GET request with headers, additional args, formatting and test functions
 { 
@@ -184,7 +239,7 @@ they should be separated by a comma.<i>
     type = "GET", 
     url = "https://pokeapi.co/api/v2/pokemon/ditto", 
     headers = { 
-        "apikey:1234567890"
+        "name:value"
     }, 
     additional_args = {  
         "-i"
@@ -231,19 +286,20 @@ they should be separated by a comma.<i>
 
 ```lua
 -- generated curl: 
--- curl -s -X GET --get --header "apikey:12345" --data-urlencode "lean=1" --data-urlencode "param1=\"something\"" https://mockapi.com/api
+-- curl -s -X GET --get --header "name:value" --data-urlencode "lean=1" --data-urlencode "param1=something" https://mockapi.com/api
+
 { 
     name = "get example",
     type = "GET", 
     url = "https://mockapi.com/api",
     headers = {
-        "apikey:12345" 
+        "name:value"
     },
     data = {
         -- will be prefixed with '--data-urlencode' in curl command
         urlencode = {
             "lean=1",
-            "param1=\"something\"" 
+            "param1=something" 
         }, 
     },
 }, --- this comma is important when selecting multiple jobs
@@ -255,6 +311,7 @@ they should be separated by a comma.<i>
 ```lua
 -- generated curl: 
 -- curl -s -X POST --header "Content-Type: application/json" --data "{ \"Name\": \"lua multiline json string\", \"Description\": \"multiline strings work too\", } " http://localhost:8080
+
 { 
     name = "another post example",
     type = "POST", 
@@ -265,12 +322,12 @@ they should be separated by a comma.<i>
     data = {
         -- prefixed by '--data' in the curl command
         standard = {
-[[
+        [[
 {
     "Name": "lua multiline json string",
     "Description": "multiline strings work too",
 }
-]]
+        ]]
         }
     },
 }, --- this comma is important when selecting multiple jobs
@@ -282,6 +339,7 @@ they should be separated by a comma.<i>
 ```lua
 -- generated curl: 
 -- curl -s -X POST --header "Content-Type: application/json" --data "{\"Name\":\"lua table example\",\"Description\":\"this will be converted to json\"}" http://localhost:8080
+
 { 
     name = "post example",
     type = "POST", 
@@ -305,6 +363,7 @@ they should be separated by a comma.<i>
 ```lua
 -- generated curl:
 -- curl -s -X POST --header "Content-Type: application/x-www-form-urlencoded" --data "name=anrcy" --data "age=30" http://localhost:8080
+
 { 
     name = "another post example",
     type = "POST", 

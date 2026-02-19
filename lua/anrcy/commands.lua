@@ -58,3 +58,11 @@ vim.api.nvim_create_user_command(
     end,
     {}
 )
+
+vim.api.nvim_create_user_command(
+    'AnrcyAnimTest',
+    function()
+        require("anrcy.ui").animation_test(10000)
+    end,
+    {}
+)
