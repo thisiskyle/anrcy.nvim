@@ -10,20 +10,15 @@ function M.insert_template()
     additional_args = { },
     show_cmd = false,
     data = {
-        urlencode = {},
         standard = {},
-        raw = {},
-        binary = {},
-        lua = {},
-        form = {},
     },
     after = function() end,
     test = function() end,
 }
 ]]
 
-    vim.fn.setreg('m', template)
-    vim.api.nvim_feedkeys('"mpjjf"', 'n', true)
+    vim.fn.setreg('0', template)
+    vim.api.nvim_feedkeys('"0pjjf"', 'n', true)
 
 end
 

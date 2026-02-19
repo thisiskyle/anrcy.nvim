@@ -7,7 +7,7 @@ local M = {}
 
 ---@type anrcy.Config
 M.defaults = {
-    animation = "catch"
+    animation = "default"
 }
 
 ---@type anrcy.Config
