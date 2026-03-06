@@ -60,6 +60,16 @@ vim.api.nvim_create_user_command(
 )
 
 vim.api.nvim_create_user_command(
+    'AnrcyHistory',
+    function()
+        local history = require("anrcy.history_manager").get_all()
+        require("anrcy.ui").show_history(history)
+        require("anrcy.history_manager").setup_keymaps()
+    end,
+    {}
+)
+
+vim.api.nvim_create_user_command(
     'AnrcyAnimTest',
     function()
         require("anrcy.ui").animation_test(10000)

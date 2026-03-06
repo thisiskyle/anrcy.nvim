@@ -136,6 +136,7 @@ vim.keymap.set(
 |AnrcyShowCurl|Display the curl commands created by the current visually selected jobs (does not run anything)|
 |AnrcyTemplate|Insert a job template at the cursor location|
 |AnrcyClear|Clear any currently running and cached jobs|
+|AnrcyHistory|View job history. Hit enter to run the job at cursor location|
 
 <br>
 <br>

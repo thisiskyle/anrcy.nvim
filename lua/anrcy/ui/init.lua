@@ -59,24 +59,37 @@ local function insert_at_top(bufn, data)
 end
 
 
+local function apply_buffer_settings()
+    vim.cmd(":set fileformat=unix")
+    vim.opt_local.buftype = "nofile"
+    vim.opt_local.filetype = "text"
+    vim.opt_local.swapfile = false
+end
+
+
 --- Creates a buffer
 ---@param name string
 ---@param vertical_split boolean
 ---
-local function create(name, vertical_split)
+local function create(name, vertical_split, singleton)
     local n = name:gsub(" ", "_")
+
     if(vertical_split) then
         vim.cmd(":vnew")
         vim.cmd(":wincmd L")
     else
         vim.cmd(":new")
     end
-    vim.cmd(":file " .. find_buf_name(n .. "_", 1))
-    vim.cmd(":set fileformat=unix")
-    vim.opt_local.buftype = "nofile"
-    vim.opt_local.filetype = "text"
-    vim.opt_local.swapfile = false
+
+    if(singleton) then
+        vim.cmd(":file " .. n)
+    else
+        vim.cmd(":file " .. find_buf_name(n .. "_", 1))
+    end
+
+    apply_buffer_settings()
     return vim.api.nvim_get_current_buf()
+
 end
 
 
@@ -84,7 +97,7 @@ end
 ---@param cmds string[]
 ---
 function M.show_commands(cmds)
-    local bufn = create("curl commands", true)
+    local bufn = create("curl commands", true, false)
     write(bufn, utils.remove_line_endings(cmds))
 end
 
@@ -101,11 +114,11 @@ function M.show(responses)
         local vertical_split = (i == 0)
 
         if(r.error) then
-            local bufn = create(r.name .. "_error", vertical_split)
+            local bufn = create(r.name .. "_error", vertical_split, false)
             write(bufn, r.error)
         else
 
-            local bufn = create(r.name, vertical_split)
+            local bufn = create(r.name, vertical_split, false)
 
             write(bufn, r.data.payload)
             if(r.after) then
@@ -137,12 +150,54 @@ function M.show(responses)
     end
 end
 
+--- 
+--- 
+--- 
+function M.show_history(history)
+
+    if(next(history) == nil) then
+        M.notify("Anrcy history is empty", "info")
+        return
+    end
+
+    local name = "anrcy_history"
+    local payload = {}
+
+    for _,v in ipairs(history) do
+        local str = ""
+        for _,j in ipairs(v) do
+            str = str .. j.name .. " "
+        end
+        table.insert(payload, str);
+    end
+
+    if(vim.fn.bufexists(name) == 0) then
+        local bufn = create(name, false, true)
+        write(bufn, payload)
+    else
+        local bufn = vim.fn.bufnr(name)
+
+        if(not vim.api.nvim_buf_is_loaded(bufn) or #vim.fn.win_findbuf(bufn) == 0) then
+            vim.cmd(":new")
+            vim.cmd(":b " .. bufn)
+            apply_buffer_settings()
+        end
+
+        write(bufn, payload)
+    end
+
+    vim.cmd(":norm gg")
+end
+
+
 --- Displays a notification
 ---@param message string
 ---@param level string
 ---
-function M.notify(message, level)
-    vim.notify(message, level, { title = "", })
+function M.notify(message, level, opts)
+    local default = { title = "", icon = "[Anrcy]" }
+    local o = vim.tbl_deep_extend("force", default, opts or {})
+    vim.notify(message, level, o)
 end
 
 --- Displays a notification of the current job progress
@@ -159,13 +214,7 @@ function M.show_progress(target, completed, animation)
         message = "Complete!"
     end
 
-    vim.notify(message, "info", {
-        id = "anrcy_progress",
-        title = "ANRCY",
-        opts = function(notif)
-            notif.icon = ""
-        end
-    })
+    M.notify(message, "info", { id = "anrcy_progress", title = "Progress" })
 
 end
 
@@ -186,12 +235,9 @@ function M.animation_test(count)
         message = message .. k .. ": " .. animator.get_frame(v) .. "\n"
     end
 
-    vim.notify(message, "info", {
+    M.notify(message, "info", {
         id = "anrcy_animate",
-        title = "Testing ANRCY Animations",
-        opts = function(notif)
-            notif.icon = ""
-        end
+        title = "Testing Animations"
     })
 
     count = count - 1

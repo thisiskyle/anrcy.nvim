@@ -189,7 +189,7 @@ end
 
 function M.show_commands(jobs)
     if(jobs == nil) then
-        vim.notify("Job list is nil", vim.log.levels.ERROR)
+        ui.notify("Job list is nil", vim.log.levels.ERROR)
         return
     end
 

@@ -1,6 +1,7 @@
 
 require("anrcy.commands")
 local config = require("anrcy.config")
+local ui = require("anrcy.ui")
 
 ---@class anrcy
 local M = {}
@@ -18,13 +19,13 @@ end
 ---
 function M.run_jobs(jobs)
     if(jobs == nil) then
-        vim.notify("Job list is nil", vim.log.levels.ERROR)
+        ui.notify("Job list is empty", vim.log.levels.ERROR)
         return
     end
 
     require("anrcy.history_manager").archive(jobs)
     require("anrcy.job_handler").async(jobs, function(responses)
-        require("anrcy.ui").show(responses)
+        ui.show(responses)
     end)
 end
 
