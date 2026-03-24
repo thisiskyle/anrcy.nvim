@@ -4,43 +4,55 @@
 
 ---@class anrcy.Job simplified job data used for creating the actual request job
 ---@field name string
----@field show_cmd? string
+---@field show_curl? boolean
 ---@field type string
 ---@field url string
 ---@field headers string[]
 ---@field data table[]
 ---@field additional_args? string[]
----@field command? string[]
+---@field command? string[] | string
 ---@field after? fun(data?: string[])
 ---@field test? fun(data?: string[])
 
 ---@class anrcy.Response
 ---@field name? string
+---@field stdout? string[]
+---@field stderr? string[]
 ---@field data? anrcy.ResponseData
----@field error? string[]
 ---@field after? fun(data?: string[])
----@field test? fun(data?: string[])
 ---@field test_results? table
----@field cmd? string[]
----@field show_cmd? boolean
+---@field curl_cmd? string[]
+---@field show_curl? boolean
 
 ---@class anrcy.TestResult 
 ---@field name string
 ---@field result boolean
 
 
+
+
 local config = require("anrcy.config")
 local utils = require("anrcy.utils")
 local ui = require("anrcy.ui")
 local curl = require("anrcy.curl")
-local active_jobs = {}
+
+
+---@type anrcy.Response[]
+local active_responses = {}
+
+---@type boolean[]
 local completed_jobs = {}
+
+---@type boolean[]
 local inprogress_jobs = {}
+
+
+
 
 --- clear the job lists
 ---
 local function clear_jobs()
-    active_jobs = {}
+    active_responses = {}
     completed_jobs = {}
     inprogress_jobs = {}
 end
@@ -71,6 +83,23 @@ local function monitor_progress()
 end
 
 
+--- Convert an anrcy.Job to a string[]
+---@param j anrcy.Job
+---@return string[] | string
+---
+local function job_to_curl(j)
+
+    return j.command or curl.build({
+        type = j.type,
+        url = j.url,
+        headers = j.headers,
+        data = j.data,
+        additional_args = j.additional_args,
+    })
+
+end
+
+
 ---@class anrcy.Job_Handler
 local M = {}
 
@@ -84,27 +113,33 @@ function M.sync(jobs)
 
     for _,j in ipairs(jobs) do
 
-        local request = {
-            type = j.type,
-            url = j.url,
-            headers = j.headers,
-            data = j.data,
-            additional_args = j.additional_args,
-        }
-
-        local cmd = j.command or curl.build(request)
+        ---@type string[] | string
+        local cmd = job_to_curl(j)
 
         if(cmd == "" or cmd == nil) then
             ui.notify("Job command was empty", vim.log.levels.ERROR)
             break
         end
 
-        responses[#responses + 1] = {
+        local response = {
             name = j.name or "anrcy",
-            data = { vim.fn.system(cmd) },
+            show_curl = j.show_curl,
+            curl_cmd = cmd,
+            data = nil,
+            error = nil,
             after = j.after or nil,
-            test = j.test or nil
+            test_results = nil
         }
+
+        local data = { vim.fn.system(cmd) }
+        local norm = utils.remove_line_endings(data)
+        response.data = utils.parse_output(norm)
+
+        if(j.test) then
+            response.test_results = j.test(response.data.payload)
+        end
+
+        responses[#responses + 1] = response
 
     end
 
@@ -120,20 +155,24 @@ function M.async(jobs, on_complete)
 
     for _,j in ipairs(jobs) do
 
-        local request = {
-            type = j.type,
-            url = j.url,
-            headers = j.headers,
-            data = j.data,
-            additional_args = j.additional_args,
-        }
-
-        local cmd = j.command or curl.build(request)
+        ---@type string[] | string
+        local cmd = job_to_curl(j)
 
         if(cmd == "" or cmd == nil) then
-            ui.notify("Job command was empty", vim.log.levels.ERROR)
-            break
+            ui.notify("Job " .. j.name .. " command was empty", vim.log.levels.ERROR)
+            goto continue
         end
+
+        local response = {
+            name = j.name or "anrcy",
+            show_curl = j.show_curl,
+            curl_cmd = cmd,
+            stdout = {},
+            stderr = {},
+            data = nil,
+            after = j.after or config.options.global_after or nil,
+            test_results = nil
+        }
 
         local job_id = vim.fn.jobstart(
             cmd,
@@ -141,53 +180,59 @@ function M.async(jobs, on_complete)
                 stdout_buffered = true,
                 stderr_buffered = true,
 
-                on_stdout = function(id, data, _)
-                    local resp = active_jobs[id]
-
-                    local norm = utils.remove_line_endings(data)
-                    resp.data = utils.parse_output(norm)
-
-                    if(resp.test) then
-                        resp.test_results = resp.test(resp.data.payload)
+                on_stdout = function(_, data, _)
+                    if(next(data) ~= nil and data[1] ~= "") then
+                        for _,v in pairs(data) do
+                            response.stdout[#response.stdout + 1] = v
+                        end
                     end
+
                 end,
 
-                on_stderr = function (id, data, _)
+                on_stderr = function (_, data, _)
                     if(next(data) ~= nil and data[1] ~= "") then
-                        active_jobs[id].error = data
+                        for _,v in pairs(data) do
+                            response.stderr[#response.stderr + 1] = v
+                        end
                     end
                 end,
 
                 on_exit = function(id, _, _)
+
+                    local norm = utils.remove_line_endings(response.stdout)
+                    response.data = utils.parse_output(norm)
+
+                    if(j.test) then
+                        response.test_results = j.test(response.data.payload)
+                    end
+
                     completed_jobs[id] = true
                     inprogress_jobs[id] = nil
 
                     if(next(inprogress_jobs) == nil) then
-                        on_complete(active_jobs)
+                        local responses = {}
+
+                        for _,r in pairs(active_responses) do
+                            table.insert(responses, r)
+                        end
+
+                        on_complete(responses)
                     end
                 end,
             }
         )
 
-        active_jobs[job_id] = {
-            name = j.name or "anrcy",
-            show_cmd = j.show_cmd,
-            cmd = cmd,
-            data = nil,
-            error = nil,
-            after = j.after or config.options.global_after or nil,
-            test = j.test or nil,
-            test_results = nil
-        }
-
+        active_responses[job_id] = response
         inprogress_jobs[job_id] = true
 
+        ::continue::
     end
+
     monitor_progress()
 end
 
 
-function M.show_commands(jobs)
+function M.show_commands_only(jobs)
     if(jobs == nil) then
         ui.notify("Job list is nil", vim.log.levels.ERROR)
         return

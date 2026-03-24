@@ -138,8 +138,6 @@ end
 ---@param responses anrcy.Response[]
 ---
 function M.show(responses)
-    local i = 0;
-
     for _,r in pairs(responses) do
 
         if(r.error) then
@@ -171,8 +169,8 @@ function M.show(responses)
                 insert_at_top(bufn, r.data.curl_header)
             end
 
-            if(r.show_cmd) then
-                local cmd = utils.get_curl_string(r.cmd)
+            if(r.show_curl) then
+                local cmd = utils.get_curl_string(r.curl_cmd)
                 insert_at_top(bufn, { " ", " " })
                 insert_at_top(bufn, { cmd })
             end
@@ -185,17 +183,11 @@ function M.show(responses)
             vim.cmd(":norm gg")
         end
 
-        i = i + 1
     end
 end
 
 --- 
 function M.show_history(history)
-
-    if(next(history) == nil) then
-        M.notify("Anrcy history is empty", "info")
-        return
-    end
 
     local payload = {}
 
@@ -208,6 +200,8 @@ function M.show_history(history)
         width = float.w,
         height = float.h,
         border = "single",
+        title = "Anrcy History",
+        title_pos = "center"
     }
 
     for _,v in ipairs(history) do

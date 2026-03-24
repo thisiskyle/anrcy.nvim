@@ -46,7 +46,7 @@ vim.api.nvim_create_user_command(
     'AnrcyShowCurl',
     function()
         local jobs = require("anrcy.utils").get_visual_selection_as_lua()
-        require("anrcy.job_handler").show_commands(jobs)
+        require("anrcy.job_handler").show_commands_only(jobs)
     end,
     { range = true }
 )

@@ -139,7 +139,7 @@ require("anrcy.job_handler").async(
         }
     },
     function(responses)
-        -- work with responses here
+        -- work with anrcy.Response[] here
     end
 )
 
@@ -196,6 +196,10 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
     ---@type string
     url = "",
 
+    --- (optional) full curl command, this will override everything else and be used to make request
+    ---@type string
+    command = "",
+
     --- (optional) array of header strings
     ---@type string[]
     headers = { },
@@ -203,7 +207,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
     --- (optional) show the curl command that is created from this job
     --- in the results buffer
     ---@type boolean
-    show_cmd = false, 
+    show_curl = false, 
 
     --- (optional) request body / url params
     ---@type anrcy.RequestData[]

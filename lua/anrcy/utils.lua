@@ -9,7 +9,7 @@ function M.insert_template()
     url = "",
     headers = { },
     additional_args = { },
-    show_cmd = false,
+    show_curl = false,
     data = {
         -- only use one of these data types
         standard = {},
@@ -30,6 +30,8 @@ function M.insert_template()
 end
 
 
+---@param arr string[]
+---
 function M.get_curl_string(arr)
     local cmd = ""
     local quoteFlag = false
