@@ -1,0 +1,315 @@
+*anrcy.txt*                                   Another Neovim REST client... yo
+
+==============================================================================
+INTRODUCTION                                                      *anrcy*
+
+Anrcy is another REST client plugin for Neovim.
+
+It is primarily a plugin for turning Lua tables into curl commands
+and executing them. Feature-wise, Anrcy is intentionally minimal and
+may feel a bit clunky. 
+
+Not all curl flags and features are accounted for.
+
+One request results in one response buffer, containing:
+- test results
+- optional curl output
+- response data
+
+==============================================================================
+TABLE OF CONTENTS                                             *anrcy-toc*
+
+  Introduction                     |anrcy|              
+  Installation                     |anrcy-install|      
+  Configuration                    |anrcy-config|       
+  Usage                            |anrcy-usage|        
+  Lua API                          |anrcy-api|          
+  Commands                         |anrcy-commands|     
+  Job Template                     |anrcy-job-template| 
+  Job Examples                     |anrcy-job-examples| 
+  Testing Responses                |anrcy-testing|      
+  About                            |anrcy-about|        
+
+==============================================================================
+INSTALLATION                                                      *anrcy-install*
+
+lazy.nvim:
+
+>lua
+    {
+        "thisiskyle/anrcy",
+        opts = {},
+    }
+<
+
+vim.pack:
+
+>lua
+    vim.pack.add({ src = "https://github.com/thisiskyle/anrcy" })
+    require("anrcy").setup({})
+<
+
+==============================================================================
+CONFIGURATION                                                     *anrcy-config*
+
+>lua
+    {
+        -- Optional function run after response data is placed into a buffer
+        -- NOTE: This is overridden by anrcy.Job.after if set.
+        global_after = function() end,
+    }
+<
+
+==============================================================================
+USAGE                                                            *anrcy-usage*
+
+Anrcy uses Lua tables to build curl commands.
+
+To run a request:
+    1. Visually select one or more Lua table jobs
+    2. Execute |:Anrcy|
+
+The response data and test results are displayed in a new buffer.
+
+NOTE: Selected text is wrapped in an array internally. To run multiple
+jobs, they must be separated by commas.
+
+Requests may be stored as text anywhere, including inside comments.
+
+==============================================================================
+ANRCY API                                                         *anrcy-api*
+
+>lua
+    -- Displays output in buffer
+    require("anrcy").process_jobs({
+        {
+            name = "ditto",
+            type = "GET",
+            url = "https://pokeapi.co/api/v2/pokemon/ditto",
+        },
+    })
+<
+
+
+You can also access the |anrcy.job_handler| directly to bypass creating a response buffer.
+
+>lua
+    -- Asynchronous, captures output for use in callback
+    require("anrcy.job_handler").async(
+      {
+          {
+              name = "ditto",
+              type = "GET",
+              url = "https://pokeapi.co/api/v2/pokemon/ditto",
+          }
+      },
+      function(responses)
+          -- responses is an array of anrcy.Response
+          -- do work here...
+      end
+    )
+<
+
+>lua
+    -- Synchronous, captures output
+    ---@type anrcy.Response[]
+    local responses = require("anrcy.job_handler").sync({
+        {
+            name = "ditto",
+            type = "GET",
+            url = "https://pokeapi.co/api/v2/pokemon/ditto",
+        }
+    })
+
+    -- do work here...
+<
+
+==============================================================================
+COMMANDS                                                        *anrcy-commands*
+
+:Anrcy
+    Run the currently visually selected jobs.
+
+:AnrcyRepeat
+    Repeat the last job that was run.
+
+:AnrcyBookmark
+    Save the currently selected jobs.
+
+:AnrcyBookmarkRun
+    Run the currently bookmarked jobs.
+
+:AnrcyShowCurl
+    Display generated curl commands without executing them.
+
+:AnrcyTemplate
+    Insert a job template at the cursor.
+
+:AnrcyClear
+    Clear currently running and cached jobs.
+
+:AnrcyHistory
+    View job history. Press <CR> to run the job under the cursor.
+
+==============================================================================
+JOB TEMPLATE                                                *anrcy-job-template*
+
+Only |type| and |url| are required.
+
+Use |:AnrcyTemplate| to insert a job template at the cursor.
+
+>lua
+    ---@type anrcy.Job
+    { 
+        --- (optional) name of the job, will be used to name the response buffer
+        ---@type string
+        name = "", 
+
+        --- (required) request type  [ "GET", "POST", etc ]
+        ---@type string
+        type = "",
+
+        --- (required) request url
+        ---@type string
+        url = "",
+
+        --- (optional) full curl command, this will override everything else and be used to make request
+        ---@type string
+        command = "",
+
+        --- (optional) array of header strings
+        ---@type string[]
+        headers = { },
+
+        --- (optional) show the curl command that is created from this job
+        --- in the results buffer
+        ---@type boolean
+        show_curl = false, 
+
+        --- (optional) request body / url params
+        --- curl rules apply, using more than one --data type is usually a bad
+        --- idea and may have unexpected outcomes
+        ---@type anrcy.RequestData[]
+        data = {
+
+            --- (optional) in the curl command, add '--data-urlencode' prefix 
+            --- for each string in the list
+            ---@type string[]
+            urlencode = {}, 
+
+            --- (optional) in the curl command, add '--data-raw' prefix for
+            --- each string in the list
+            ---@type string[]
+            raw = {}, 
+
+            --- (optional) encodes the lua table as json and will add '--data' prefix before 
+            --- the data in the curl command
+            ---@type table
+            lua = {},
+
+            --- (optional) in the curl command, add '--data' prefix before the string 
+            ---@type string[]
+            standard = {},
+
+            --- (optional) in the curl command, add '--data-binary' prefix before the string 
+            ---@type string
+            binary = {},
+
+        },
+
+        --- (optional) array of additional curl arguments as strings
+        ---@type string[]
+        additional_args = {},
+
+        --- (optional) runs after the response is loaded into the buffer, used for formatting
+        ---@type fun(data: anrcy.ResponseData)
+        after = nil,
+
+        --- (optional) runs last, runs tests against the reponse data
+        ---@type fun(data: anrcy.ResponseData): anrcy.TestResult[]
+        test = nil,
+    },
+<
+
+==============================================================================
+JOB EXAMPLES                                                *anrcy-job-examples*
+
+Simple GET:
+
+>lua
+    {
+        name = "pikachu",
+        type = "GET",
+        url  = "https://pokeapi.co/api/v2/pokemon/pikachu",
+    },
+<
+
+Complex GET with tests and formatting:
+
+>lua
+    {
+        name = "ditto",
+        type = "GET",
+        url  = "https://pokeapi.co/api/v2/pokemon/ditto",
+        headers = { 
+            "name:value" 
+        },
+        additional_args = { 
+            "-i" 
+        },
+        after = function(data)
+            vim.cmd(":%!jq")
+        end,
+        test = function(data)
+            local assert = require("anrcy.assert")
+
+            local dataPath = { "abilities", 1, "ability", "name" }
+            local expectedValue = "limber"
+            local limberResult = assert.json_path_equals(data, dataPath, expectedValue)
+
+            return {
+                { name = "has limber ability", result = limberResult },
+            }
+        end
+    },
+<
+
+==============================================================================
+TESTING RESPONSES                                           *anrcy-testing*
+
+Anrcy supports testing response data using |anrcy.Job.test|.
+
+The test function must return an array of |anrcy.TestResult| tables.
+
+Helper assertion functions are available via:
+
+>lua
+    require("anrcy.assert")
+<
+
+Example test function:
+
+>lua
+    test = function(data)
+        local assert = require("anrcy.assert")
+  
+        return {
+            {
+                name = "pokemon is ditto",
+                result = assert.data_contains(data, 'name.*ditto')
+            },
+            {
+                name = "has limber ability",
+                result = assert.json_path_equals(
+                    data, { "abilities", 1, "ability", "name" }, "limber"
+                )
+            },
+        }
+    end
+<
+
+==============================================================================
+ABOUT                                                         *anrcy-about*
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:
