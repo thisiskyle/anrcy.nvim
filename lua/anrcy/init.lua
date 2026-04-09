@@ -32,7 +32,7 @@ end
 --- expects visually selected text to be a single, or multiple anrcy.Jobs
 --- then runs those jobs and displays the output
 ---
-function M.jobs()
+function M.run_highlighted_jobs()
     local jobs = require("anrcy.utils").get_visual_selection_as_lua()
     M.process_jobs(jobs)
 end
@@ -41,8 +41,9 @@ end
 --- expects a url to be visually selected and uses that to create a basic GET job
 --- then runs the job and displays the output
 ---
-function M.url()
+function M.get_highlighted_url()
     local _url = require("anrcy.utils").get_visual_selection()
+
     require("anrcy").process_jobs({
         {
             name = "anrcy_quick_get",

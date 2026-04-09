@@ -1,5 +1,5 @@
-vim.api.nvim_create_user_command('Anrcy', function() require("anrcy").jobs() end, { range = true })
-vim.api.nvim_create_user_command('AnrcyQuickGet', function() require("anrcy").url() end, { range = true })
+vim.api.nvim_create_user_command('Anrcy', function() require("anrcy").run_highlighted_jobs() end, { range = true })
+vim.api.nvim_create_user_command('AnrcyQuickGet', function() require("anrcy").get_highlighted_url() end, { range = true })
 vim.api.nvim_create_user_command('AnrcyBookmark', function() require("anrcy").set_bookmark() end, { range = true })
 vim.api.nvim_create_user_command('AnrcyShowCurl', function() require("anrcy").show_curl() end, { range = true })
 
