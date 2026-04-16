@@ -58,14 +58,26 @@ function M.get_curl_string(arr)
 end
 
 
-
-
-
-
 --- Get the currently selected text from the buffer
 ---
 function M.get_visual_selection()
-    local lines = vim.fn.getregion(vim.fn.getpos("v"), vim.fn.getpos("."), { type = vim.fn.mode() })
+
+    local mode = vim.api.nvim_get_mode().mode
+    local start_pos
+    local end_pos
+    local region_type
+
+    if mode:match("[vV\22]") then
+        start_pos = vim.fn.getpos("v")
+        end_pos = vim.fn.getpos(".")
+        region_type = vim.fn.mode()
+    else
+        start_pos = vim.fn.getpos("'<")
+        end_pos = vim.fn.getpos("'>")
+        region_type = vim.fn.visualmode()
+    end
+
+    local lines = vim.fn.getregion(start_pos, end_pos, { type = region_type })
     return table.concat(lines, '\n')
 end
 
@@ -156,12 +168,13 @@ end
 
 --- Get the visual selection block and inject it into a temp file
 --- this temp file will be loaded as lua with dofile
----@return anrcy.Job[]?
+---@return anrcy.Job[]
+---
 ---
 function M.get_visual_selection_as_lua()
     local selected = M.get_visual_selection()
     if(selected == nil or selected == "") then
-        return nil
+        return {}
     end
     local path = vim.fn.stdpath("cache") .. "/tmp.lua"
     local file = io.open(path, "w")
@@ -174,6 +187,21 @@ function M.get_visual_selection_as_lua()
     local data = dofile(path)
 
     return data
+end
+
+
+--- Formats the test results into a string[] for buffer insertion
+---@param results table
+---@return string[]
+---
+function M.format_test_results(results)
+    local content = {}
+    for i,v in ipairs(results) do
+        local result = (v.result) and "pass" or "fail"
+        local name = (v.name and v.name ~= "") and v.name or ("Test ".. i)
+        content[#content + 1] = "[" .. result .. "] " .. name
+    end
+    return content
 end
 
 

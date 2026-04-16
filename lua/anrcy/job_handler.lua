@@ -1,34 +1,3 @@
----@class anrcy.ResponseData
----@field payload string[]
----@field curl_header string[]
-
----@class anrcy.Job simplified job data used for creating the actual request job
----@field name string
----@field show_curl? boolean
----@field type string
----@field url string
----@field headers string[]
----@field data table[]
----@field additional_args? string[]
----@field command? string[] | string
----@field after? fun(data?: string[])
----@field test? fun(data?: string[])
-
----@class anrcy.Response
----@field name? string
----@field stdout? string[]
----@field stderr? string[]
----@field data? anrcy.ResponseData
----@field test_results? table
----@field curl_cmd? string[]
----@field show_curl? boolean
-
----@class anrcy.TestResult 
----@field name string
----@field result boolean
-
-
-
 
 local config = require("anrcy.config")
 local utils = require("anrcy.utils")
@@ -47,9 +16,6 @@ local inprogress_jobs = {}
 
 
 
-
---- clear the job lists
----
 local function clear_jobs()
     active_responses = {}
     completed_jobs = {}
@@ -57,8 +23,6 @@ local function clear_jobs()
 end
 
 
---- Get the progress counts and pass it along to the UI
----
 local function monitor_progress()
     local run = 0
     local done = 0
@@ -82,12 +46,10 @@ local function monitor_progress()
 end
 
 
---- Convert an anrcy.Job to a string[]
 ---@param j anrcy.Job
 ---@return string[] | string
 ---
 local function job_to_curl(j)
-
     return j.command or curl.build({
         type = j.type,
         url = j.url,
@@ -95,7 +57,6 @@ local function job_to_curl(j)
         data = j.data,
         additional_args = j.additional_args,
     })
-
 end
 
 
@@ -207,8 +168,8 @@ function M.async(jobs, on_complete)
 
                     if(j.after) then
                         modifiedPayload = j.after(response.data.payload)
-                    elseif(config.global_after) then
-                        modifiedPayload = config.global_after(response.data.payload)
+                    elseif(config.opts.global_after) then
+                        modifiedPayload = config.opts.global_after(response.data.payload)
                     end
 
                     -- only overwrite the original payload if the modified payload is not nil
@@ -243,6 +204,8 @@ function M.async(jobs, on_complete)
 end
 
 
+---@param jobs anrcy.Job[]
+---
 function M.show_commands_only(jobs)
     if(jobs == nil) then
         ui.notify("Job list is nil", vim.log.levels.ERROR)

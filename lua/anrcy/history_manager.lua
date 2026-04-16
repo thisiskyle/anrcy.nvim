@@ -68,7 +68,24 @@ end
 
 
 function M.show()
-    local bufn = require("anrcy.ui").show_history(history)
+
+    local payload = {}
+
+    for _,v in ipairs(history) do
+        local str = ""
+
+        for i,j in ipairs(v) do
+            str = str .. j.name
+
+            if(i ~= #v) then
+                str = str .. ", "
+            end
+        end
+
+        payload[#payload + 1] = str
+    end
+
+    local bufn = require("anrcy.ui").show_history(payload)
     setup_keymaps(bufn)
 end
 

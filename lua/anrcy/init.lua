@@ -24,7 +24,7 @@ function M.process_jobs(jobs)
 
     require("anrcy.history_manager").archive(jobs)
     require("anrcy.job_handler").async(jobs, function(responses)
-        ui.show(responses)
+        ui.show_response(responses)
     end)
 end
 
@@ -74,6 +74,9 @@ end
 function M.set_bookmark()
     local jobs = require("anrcy.utils").get_visual_selection_as_lua()
     require("anrcy.history_manager").set_bookmark(jobs)
+    local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
+    vim.api.nvim_feedkeys(esc, 'nx', false)
+    require("anrcy.ui").notify("Bookmark set!", vim.log.levels.INFO)
 end
 
 

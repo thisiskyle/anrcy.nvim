@@ -1,11 +1,7 @@
----@class anrcy.Animation
----@field delta_time_ms number
----@field frames string[]
+
+
 
 ---@class anrcy.Animator
----@field animations anrcy.Animation[]
----@field get_frame fun(animation: anrcy.Animation): string
----
 local M = {}
 
 ---@param animation? anrcy.Animation

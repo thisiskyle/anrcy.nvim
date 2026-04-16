@@ -252,7 +252,7 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
         after = nil,
 
         --- (optional) runs last, runs tests against the reponse data
-        ---@type fun(string[]): anrcy.TestResult[]
+        ---@type fun(string[]): anrcy.Test_Result[]
         test = nil,
     },
 <
@@ -294,7 +294,7 @@ Complex GET with tests and formatting:
             return vim.split(out, "\n", { plain = true })
         end,
         ---@param payload string[]
-        ---@return TestResult[]
+        ---@return Test_Result[]
         test = function(payload)
             local assert = require("anrcy.assert")
             local path = { "abilities", 1, "ability", "name" }

@@ -249,7 +249,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
     show_curl = false, 
 
     --- (optional) request body / url params
-    ---@type anrcy.RequestData[]
+    ---@type anrcy.Request_Data[]
     data = {
 
         --- (optional) in the curl command, add '--data-urlencode' prefix before each data string in the list
@@ -284,7 +284,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
     after = nil,
 
     --- (optional) runs last, runs tests against the reponse data
-    ---@type fun(string[]): anrcy.TestResult[]
+    ---@type fun(string[]): anrcy.Test_Result[]
     test = nil,
 },
 ```
@@ -472,7 +472,7 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
 ## Testing Response Data <a id="tests"></a>
 
 Anrcy supports testing the request response using the ```anrcy.Job.Test``` function. This function is expected to return an array
-of ```arncy.TestResult``` tables. 
+of ```arncy.Test_Result``` tables. 
 
 A few helper functions for parsing through the response is provided with ```require("anrcy.assert")```
 
