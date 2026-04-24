@@ -35,7 +35,6 @@ function M.show_commands(cmds)
 end
 
 
---- Displays each Response in a new buffer
 ---@param responses anrcy.Response[]
 ---
 function M.show_response(responses)
@@ -85,7 +84,9 @@ function M.show_response(responses)
     end
 end
 
---- 
+
+---@param history string[]
+---
 function M.show_history(history)
 
     local float = window.calc_float_window()
