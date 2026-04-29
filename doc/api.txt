@@ -1,0 +1,182 @@
+*api.txt*                                                              Anrcy Api
+
+
+==============================================================================
+TABLE OF CONTENTS                                                *anrcy-api-toc*
+
+  Job Handler                     |anrcy.job_handler|              
+  Assert                          |anrcy.assert|              
+
+
+==============================================================================
+ANRCY                                                                *anrcy-api*
+
+
+proccess_jobs({jobs})                                       *anrcy.process_jobs*
+
+    This is the function that is used by the `:Anrcy` command.
+    Will run all jobs and display their output in a buffer
+
+    Parameters:
+        - {jobs} (`anrcy.Job[]`) 
+
+    Returns:
+
+    Example:
+>lua
+    require("anrcy").process_jobs({
+        {
+            name = "ditto",
+            type = "GET",
+            url = "https://pokeapi.co/api/v2/pokemon/ditto",
+        },
+    })
+<
+
+
+==============================================================================
+JOB_HANDLER                                                  *anrcy.job_handler*
+
+You can access the |anrcy.job_handler| directly to bypass creating a 
+response buffer.
+
+
+                                                       *anrcy.job_handler.async*
+async({jobs}, {callback})
+
+    Asynchronous, captures output for use in callback
+
+    Parameters:
+        - {jobs} (`anrcy.Job[]`) 
+        - {callback} (`func`) handles the response as each job completes
+
+    Example:
+>lua
+    require("anrcy.job_handler").async(
+      {
+          {
+              name = "ditto",
+              type = "GET",
+              url = "https://pokeapi.co/api/v2/pokemon/ditto",
+          }
+      },
+      function(responses)
+          -- responses is an anrcy.Response[]
+          -- do work here...
+      end
+    )
+<
+
+                                                        *anrcy.job_handler.sync*
+sync({jobs})
+
+    Synchronous, captures and returns output of all jobs on completion
+
+    Parameters:
+        - {jobs} (`anrcy.Job[]`) 
+
+    Example:
+>lua
+    ---@type anrcy.Response[]
+    local responses = require("anrcy.job_handler").sync({
+        {
+            name = "ditto",
+            type = "GET",
+            url = "https://pokeapi.co/api/v2/pokemon/ditto",
+        }
+    })
+
+    -- do work here...
+<
+
+
+==============================================================================
+ASSERT                                                            *anrcy.assert*
+
+
+
+                                                 *anrcy.assert.json_path_equals*
+json_path_equals({data}, {path}, {value})
+    
+    Verify the value at the end of a json path matches {value}
+
+    Parameters:
+        - {data} (`string[]`) json data
+        - {path} (`string[]`) path to the json key you want to inspect
+        - {value} (`string`) the value you are expecting
+
+    Return:
+        - (`boolean`) True if {value} is found, false if not found
+
+    Example:
+>lua
+    local result = assert.json_path_equals(data, { "name" }, "ditto")
+<
+
+
+                                               *anrcy.assert.json_path_contains*
+json_array_contains({data}, {pathToArray}, {pathInItem}, {value})
+    
+    Loop through each element in the array at the given {pathToArray} 
+    and verify the value at {pathInItem} matches {value}
+
+    Parameters:
+        - {data} (`string[]`) json data
+        - {pathToArray} (`string[]`) array of json keys that lead to the array 
+          you want to inspect
+        - {pathInItem} (`string[]`) array of json keys in each array element
+          that you want to inspect
+        - {value} (`string`) the value you are expecting
+
+    Return:
+        - (`boolean`) True if {value} is found, false if not found
+
+    Example:
+>lua
+    local result = assert.json_array_contains(
+        data, 
+        { "moves" },
+        { "move", "name" },
+        "flamethrower"
+    )
+<
+
+                                                 *anrcy.assert.json_path_exists*
+json_path_exists({data}, {path})
+
+    Verify that the given {path} exists in this json data
+
+    Parameters:
+        - {data} (`string[]`) json data
+        - {path} (`string[]`) array of json keys that lead to the key 
+          you want to inspect
+
+    Return:
+        - (`boolean`) True if {path} is valid, false otherwise
+
+    Example:
+>lua
+    local result = assert.json_path_exists(data, { "name" })
+<
+
+
+                                                    *anrcy.assert.data_contains*
+data_contains({data}, {pattern})
+
+    Check for a regex {pattern} anywhere in the data
+
+    Parameters:
+        - {data} (`string[]`) json data
+        - {pattern} (`string`) regex string
+
+    Return:
+        - (`boolean`) True if {pattern} is found, false otherwise
+
+    Example:
+>lua
+    local result = assert.data_contains(data, 'charizard')
+<
+
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

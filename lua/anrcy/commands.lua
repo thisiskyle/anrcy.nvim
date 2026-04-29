@@ -1,10 +1,65 @@
-vim.api.nvim_create_user_command('Anrcy', function() require("anrcy").run_highlighted_jobs() end, { range = true })
-vim.api.nvim_create_user_command('AnrcyQuickGet', function() require("anrcy").get_highlighted_url() end, { range = true })
-vim.api.nvim_create_user_command('AnrcyBookmark', function() require("anrcy").set_bookmark() end, { range = true })
-vim.api.nvim_create_user_command('AnrcyShowCurl', function() require("anrcy").show_curl() end, { range = true })
+vim.api.nvim_create_user_command(
+    'Anrcy',
+    function(opts)
+        local arg = opts.args
+        local range = opts.range > 0 and { opts.line1, opts.line2 } or nil
+        local anrcy = require("anrcy")
 
-vim.api.nvim_create_user_command('AnrcyExecuteBookmark', function() require("anrcy").execute_bookmark() end, {})
-vim.api.nvim_create_user_command('AnrcyClear', function() require("anrcy").clear_jobs() end, {})
-vim.api.nvim_create_user_command('AnrcyRepeat', function() require("anrcy").repeat_last() end, {})
-vim.api.nvim_create_user_command('AnrcyTemplate', function() require("anrcy").insert_template() end, {})
-vim.api.nvim_create_user_command('AnrcyHistory', function() require("anrcy").show_history() end, {})
+        if(#arg == 0 and range) then
+            anrcy.run_highlighted_jobs()
+            return
+        end
+
+        if(arg == 'quick_get' and range) then
+            anrcy.get_highlighted_url()
+
+        elseif(arg == 'bookmark_set' and range) then
+            anrcy.set_bookmark()
+
+        elseif(arg == 'bookmark_run') then
+            anrcy.execute_bookmark()
+
+        elseif(arg == 'clear') then
+            anrcy.clear_jobs()
+
+        elseif(arg == 'history') then
+            anrcy.show_history()
+
+        elseif(arg == 'repeat') then
+            anrcy.repeat_last()
+
+        elseif(arg == 'show_curl' and range) then
+            anrcy.show_curl()
+
+        elseif(arg == 'template') then
+            anrcy.insert_template()
+
+        else
+            vim.notify(
+                'Invalid command: Anrcy ' .. arg .. " while range = " .. (range or "nil"),
+                vim.log.levels.ERROR
+            )
+        end
+
+    end, {
+        nargs = "?",
+        range = true,
+        complete = function(arglead)
+            return vim.tbl_filter(
+                function(cmd)
+                    return cmd:find(arglead, 1, true) == 1
+                end, {
+                    'bookmark_set',
+                    'bookmark_run',
+                    'clear',
+                    'history',
+                    'quick_get',
+                    'repeat',
+                    'show_curl',
+                    'template',
+                }
+            )
+        end,
+    }
+)
+

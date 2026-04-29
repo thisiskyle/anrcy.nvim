@@ -1,7 +1,6 @@
 local M = {}
 
 --- Assumes a json string is provided as an array of strings. 
---- This is because of the way the data is brought back in chunks
 --- Checks it for a key value pair.
 ---@param data string[]
 ---@param path string[]
@@ -36,7 +35,6 @@ end
 
 
 --- Assumes a json string is provided as an array of strings. 
---- This is because of the way the data is brought back in chunks
 --- Checks if an array item at pathToArray -> pathInItem equals the value
 ---@param data string[]
 ---@param pathToArray string[]

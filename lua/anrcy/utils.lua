@@ -4,21 +4,12 @@ local M = {}
 function M.insert_template()
     local template = [[{
     name = "",
-    -- GET | POST | PUT | DELETE
     type = "",
     url = "",
     headers = { },
     additional_args = { },
     show_curl = false,
-    data = {
-        -- only use one of these data types
-        standard = {},
-        urlencode = {},
-        raw = {},
-        lua = {},
-        binary = {},
-        form = {},
-    },
+    data = { },
     after = function() end,
     test = function() end,
 },
@@ -168,8 +159,8 @@ end
 
 --- Get the visual selection block and inject it into a temp file
 --- this temp file will be loaded as lua with dofile
----@return anrcy.Job[]
 ---
+---@return anrcy.Job[]
 ---
 function M.get_visual_selection_as_lua()
     local selected = M.get_visual_selection()
@@ -191,6 +182,7 @@ end
 
 
 --- Formats the test results into a string[] for buffer insertion
+---
 ---@param results table
 ---@return string[]
 ---

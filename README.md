@@ -109,14 +109,33 @@ require("anrcy").setup({})
 Anrcy uses lua tables to build curl commands. You use neovim to visually highlight the table(s) and run `:'<,'>Anrcy` 
 The response data, test results, and anything else returned from the request will be displayed in its own buffer. One request, one buffer.
 
-<i>NOTE: Selected text is wrapped in an array internally. So to run multiple jobs they should be separated by a comma.</i>
+Internally, your highlighted text is wrapped in an array and inserted into a temp file that looks like this
+This file is the executed using `dofile()` and the returned job array is used.  
 
-Since you run Anrcy by visually highlighting a block, your request table can be stored as text anywhere.
+<br>
+
+```lua
+-- temporary file
+return {
+    { 
+        name = "job A", 
+        type = "GET",
+        url = "https://whatever.com"
+    }
+}
+```
+
+<br>
+
+
+And since you run Anrcy by visually highlighting a block, your request table can be stored as text anywhere.
 Here is an example of a request stored in a comment above a function call for easy testing.
 
 <br>
 
 ```js
+// Visually highlight the lua portion of the comment and run :'<,'>Anrcy to see the results.
+
 /*
  
 { 
@@ -134,7 +153,6 @@ ditto: async () => {
 
 <br>
 
-Visually highlight the lua portion of the comment and run ```:'<,'>Anrcy``` to see the results.
 
 
 ### Anrcy API
@@ -160,7 +178,7 @@ vim.keymap.set(
 )
 ```
 
-You can also call the ```anrcy.job_handler``` directly and bypass displaying the response so you can handle the data 
+You can also call the `anrcy.job_handler` directly and bypass displaying the response so you can handle the data 
 yourself.
 
 
@@ -203,13 +221,14 @@ local responses = require("anrcy.job_handler").sync({
 |Command|Description|
 |-------|-----------|
 |:'<,'>Anrcy|Run the highlighted jobs|
-|:'<,'>AnrcyBookmark|Bookmark the highlighted jobs|
-|:'<,'>AnrcyShowCurl|Display the curl commands created by the highlighted jobs (does not run curl command)|
-|:AnrcyBookmarkRun|Run the currently bookmarked jobs|
-|:AnrcyRepeat|Repeat the last job that was run|
-|:AnrcyTemplate|Insert a job template at the cursor location|
-|:AnrcyClear|Clear any running or cached jobs|
-|:AnrcyHistory|View job history. Hit enter to run the job at cursor location|
+|:'<,'>Anrcy bookmark_set|Bookmark the highlighted jobs|
+|:'<,'>Anrcy show_curl|Display the curl commands created by the highlighted jobs (does not run curl command)|
+|:'<,'>Anrcy quick_get|Run a quick curl GET request on the highlighted url|
+|:Anrcy bookmark_run|Run the currently bookmarked jobs|
+|:Anrcy repeat|Repeat the last job that was run|
+|:Anrcy template|Insert a job template at the cursor location|
+|:Anrcy clear|Clear any running or cached jobs|
+|:Anrcy history|View job history. Hit enter to run the job at cursor location|
 
 <br>
 <br>
@@ -217,7 +236,7 @@ local responses = require("anrcy.job_handler").sync({
 ## anrcy.Job Template <a id="job-template"></a>
 
 
-Most of the fields for the job template are optional, ```type``` and ```url``` are all that is required.
+Most of the fields for the job template are optional, `type` and `url` are all that is required.
 
 
 ```lua
@@ -402,14 +421,12 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
     },
     data = {
         -- prefixed by '--data' in the curl command
-        standard = {
-        [[
+        standard = { [[
 {
     "Name": "lua multiline json string",
     "Description": "multiline strings work too",
 }
-        ]]
-        }
+        ]] }
     },
 }, --- this comma is important when highlighting multiple jobs
 
@@ -465,16 +482,43 @@ Most of the fields for the job template are optional, ```type``` and ```url``` a
 
 ```
 
+```lua
+-- if you want to get weird with it...
+-- this IIFE returns a job table and takes in a parameter
+-- useful if you are making the same call often but 
+-- want to control some part of it.
+
+-- You can highlight this function and run it like a normal job.
+
+(function(pokemon)
+    return {
+        name = pokemon,
+        type = "GET",
+        url = "https://pokeapi.co/api/v2/pokemon/" .. pokemon,
+        test = function(data)
+            local assert = require("anrcy.assert")
+            return {
+                {
+                    name = "name is " .. pokemon,
+                    result = assert.json_path_equals(data, { "name" }, pokemon)
+                },
+            }
+        end
+    }
+end)("charizard"),
+
+```
+
 <br>
 <br>
 
 
 ## Testing Response Data <a id="tests"></a>
 
-Anrcy supports testing the request response using the ```anrcy.Job.Test``` function. This function is expected to return an array
-of ```arncy.Test_Result``` tables. 
+Anrcy supports testing the request response using the `anrcy.Job.Test` function. This function is expected to return an array
+of `arncy.Test_Result` tables. 
 
-A few helper functions for parsing through the response is provided with ```require("anrcy.assert")```
+A few helper functions for parsing through the response is provided with `require("anrcy.assert")`
 
 Example Test Function:
 

@@ -96,58 +96,9 @@ To run a request:
 
 The response data and test results are displayed in a new buffer.
 
-NOTE: Selected text is wrapped in an array internally. To run multiple
-jobs, they must be separated by commas.
+Internally, your highlighted text is wrapped in an array and inserted into a temp file.
+This file is the executed using `dofile()` and the returned job array is used.  
 
-Requests may be stored as text anywhere, including inside comments.
-
-==============================================================================
-ANRCY API                                                         *anrcy-api*
-
->lua
-    -- Displays output in buffer
-    require("anrcy").process_jobs({
-        {
-            name = "ditto",
-            type = "GET",
-            url = "https://pokeapi.co/api/v2/pokemon/ditto",
-        },
-    })
-<
-
-
-You can also access the |anrcy.job_handler| directly to bypass creating a response buffer.
-
->lua
-    -- Asynchronous, captures output for use in callback
-    require("anrcy.job_handler").async(
-      {
-          {
-              name = "ditto",
-              type = "GET",
-              url = "https://pokeapi.co/api/v2/pokemon/ditto",
-          }
-      },
-      function(responses)
-          -- responses is an anrcy.Response[]
-          -- do work here...
-      end
-    )
-<
-
->lua
-    -- Synchronous, captures output
-    ---@type anrcy.Response[]
-    local responses = require("anrcy.job_handler").sync({
-        {
-            name = "ditto",
-            type = "GET",
-            url = "https://pokeapi.co/api/v2/pokemon/ditto",
-        }
-    })
-
-    -- do work here...
-<
 
 ==============================================================================
 COMMANDS                                                        *anrcy-commands*
@@ -155,27 +106,30 @@ COMMANDS                                                        *anrcy-commands*
 :'<,'>Anrcy
     Run the currently highlighted jobs
 
-:AnrcyRepeat
+:Anrcy repeat
     Repeat the last run
 
-:'<,'>AnrcyBookmark
+:'<,'>Anrcy bookmark_set
     Save the currently highlighted jobs
 
-:AnrcyBookmarkRun
+:Anrcy bookmark_run
     Run the currently bookmarked jobs
 
-:'<,'>AnrcyShowCurl
+:'<,'>Anrcy show_curl
     Display generated curl commands of the highlighted jobs 
     without executing them
 
-:AnrcyTemplate
+:Anrcy template
     Insert a job template at the cursor
 
-:AnrcyClear
+:Anrcy clear
     Clear currently running and cached jobs
 
-:AnrcyHistory
+:Anrcy history
     View job history (press <CR> to run the job under the cursor)
+
+:Anrcy quick_get
+    Run a quick GET request on the highlighted url
 
 ==============================================================================
 JOB TEMPLATE                                                *anrcy-job-template*
@@ -310,15 +264,9 @@ Complex GET with tests and formatting:
 ==============================================================================
 TESTING RESPONSES                                           *anrcy-testing*
 
-Anrcy supports testing response data using |anrcy.Job.test|.
+Anrcy supports testing response data using |anrcy.Job.test|
 
 The test function must return an array of |anrcy.TestResult| tables.
-
-Helper assertion functions are available via:
-
->lua
-    require("anrcy.assert")
-<
 
 Example test function:
 

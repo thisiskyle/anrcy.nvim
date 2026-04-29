@@ -1,6 +1,6 @@
 anrcy	anrcy.txt	/*anrcy*
-anrcy-about	anrcy.txt	/*anrcy-about*
-anrcy-api	anrcy.txt	/*anrcy-api*
+anrcy-api	api.txt	/*anrcy-api*
+anrcy-api-toc	api.txt	/*anrcy-api-toc*
 anrcy-commands	anrcy.txt	/*anrcy-commands*
 anrcy-config	anrcy.txt	/*anrcy-config*
 anrcy-install	anrcy.txt	/*anrcy-install*
@@ -9,4 +9,14 @@ anrcy-job-template	anrcy.txt	/*anrcy-job-template*
 anrcy-testing	anrcy.txt	/*anrcy-testing*
 anrcy-toc	anrcy.txt	/*anrcy-toc*
 anrcy-usage	anrcy.txt	/*anrcy-usage*
+anrcy.assert	api.txt	/*anrcy.assert*
+anrcy.assert.data_contains	api.txt	/*anrcy.assert.data_contains*
+anrcy.assert.json_path_contains	api.txt	/*anrcy.assert.json_path_contains*
+anrcy.assert.json_path_equals	api.txt	/*anrcy.assert.json_path_equals*
+anrcy.assert.json_path_exists	api.txt	/*anrcy.assert.json_path_exists*
+anrcy.job_handler	api.txt	/*anrcy.job_handler*
+anrcy.job_handler.async	api.txt	/*anrcy.job_handler.async*
+anrcy.job_handler.sync	api.txt	/*anrcy.job_handler.sync*
+anrcy.process_jobs	api.txt	/*anrcy.process_jobs*
 anrcy.txt	anrcy.txt	/*anrcy.txt*
+api.txt	api.txt	/*api.txt*
