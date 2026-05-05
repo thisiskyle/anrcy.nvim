@@ -19,7 +19,7 @@ function M.calc_float_window()
 end
 
 
-function M.create_window(bufn, opts)
+function M.create(bufn, opts)
     return vim.api.nvim_open_win(bufn, true, opts)
 end
 

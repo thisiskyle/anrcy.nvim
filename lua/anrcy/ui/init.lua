@@ -22,19 +22,26 @@ local function create_buffer(opts)
 end
 
 
-local function show_in_quickfix(bufs)
-    local list = {}
-    for _,v in ipairs(bufs) do
-        list[#list + 1] = {
+local function open_quickfix_layout(buffers)
+
+    local qf_items = {}
+
+    for _,v in ipairs(buffers) do
+        qf_items[#qf_items + 1] = {
             bufnr = v,
             lnum = 1,
             col = 1,
             title = "Anrcy Responses"
         }
     end
-    vim.fn.setqflist(list, "r")
-    vim.cmd("copen")
+
+    vim.fn.setqflist(qf_items, "r")
+    window.create(0, { split = "right" })
     vim.cmd("cfirst")
+
+    if(#buffers > 1) then
+        vim.cmd("copen")
+    end
 end
 
 
@@ -46,7 +53,7 @@ function M.show_commands(cmds)
         singleton = false,
         payload = utils.remove_line_endings(cmds),
     })
-    window.create_window(bufn, { split = "right" })
+    window.create(bufn, { split = "right" })
 end
 
 
@@ -98,8 +105,7 @@ function M.show_response(responses)
 
     end
 
-    show_in_quickfix(buffers)
-
+    open_quickfix_layout(buffers)
 end
 
 
@@ -120,7 +126,7 @@ function M.show_history(history)
         payload = history,
     })
 
-    window.create_window(bufn, {
+    window.create(bufn, {
         relative = 'editor',
         row = float.y,
         col = float.x,
