@@ -1,6 +1,21 @@
 *anrcy.txt*                                   Another Neovim REST Client... yo
 
 ==============================================================================
+TABLE OF CONTENTS                                             *anrcy-toc*
+
+  Introduction                     |anrcy|              
+  Installation                     |anrcy-install|      
+  Configuration                    |anrcy-config|       
+  Usage                            |anrcy-usage|        
+  Commands                         |anrcy-commands|     
+  Job Template                     |anrcy-job-template| 
+  Job Files                        |anrcy-job-files|
+  Job Examples                     |anrcy-job-examples| 
+  Testing Responses                |anrcy-testing|      
+  Lua API                          |anrcy-api|          
+
+
+==============================================================================
 INTRODUCTION                                                      *anrcy*
 
 Anrcy is a REST client for Neovim.
@@ -15,18 +30,6 @@ One request results in one response buffer, containing:
 - optional curl output
 - response data
 
-==============================================================================
-TABLE OF CONTENTS                                             *anrcy-toc*
-
-  Introduction                     |anrcy|              
-  Installation                     |anrcy-install|      
-  Configuration                    |anrcy-config|       
-  Usage                            |anrcy-usage|        
-  Lua API                          |anrcy-api|          
-  Commands                         |anrcy-commands|     
-  Job Template                     |anrcy-job-template| 
-  Job Examples                     |anrcy-job-examples| 
-  Testing Responses                |anrcy-testing|      
 
 ==============================================================================
 INSTALLATION                                                      *anrcy-install*
@@ -86,7 +89,7 @@ Pass this into the setup function to configure Anrcy.
 <
 
 ==============================================================================
-USAGE                                                            *anrcy-usage*
+USAGE                                                              *anrcy-usage*
 
 Anrcy uses Lua tables to build curl commands.
 
@@ -131,6 +134,7 @@ COMMANDS                                                        *anrcy-commands*
 :Anrcy quick_get
     Run a quick GET request on the highlighted url
 
+
 ==============================================================================
 JOB TEMPLATE                                                *anrcy-job-template*
 
@@ -145,6 +149,11 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
         ---@type string
         name = "", 
 
+        --- (optional) full path of a job file to source 
+        --- the rest of the job in be ignored in favor of the file being sourced
+        ---@type string
+        source = "", 
+
         --- (required) request type  [ "GET", "POST", etc ]
         ---@type string
         type = "",
@@ -153,7 +162,8 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
         ---@type string
         url = "",
 
-        --- (optional) full curl command, this will override everything else and be used to make request
+        --- (optional) full curl command, this will override everything else 
+        --- and be used to make request
         ---@type string
         command = "",
 
@@ -182,16 +192,18 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
             ---@type string[]
             raw = {}, 
 
-            --- (optional) encodes the lua table as json and will add '--data' prefix before 
-            --- the data in the curl command
+            --- (optional) encodes the lua table as json and will add '--data' 
+            --- prefix before the data in the curl command
             ---@type table
             lua = {},
 
-            --- (optional) in the curl command, add '--data' prefix before the string 
+            --- (optional) in the curl command, add '--data' prefix before the 
+            --- string 
             ---@type string[]
             standard = {},
 
-            --- (optional) in the curl command, add '--data-binary' prefix before the string 
+            --- (optional) in the curl command, add '--data-binary' prefix 
+            --- before the string 
             ---@type string
             binary = {},
 
@@ -201,7 +213,8 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
         ---@type string[]
         additional_args = {},
 
-        --- (optional) runs after the response is loaded into the buffer, used for formatting
+        --- (optional) runs after the response is loaded into the buffer, 
+        --- used mostly for formatting
         ---@type fun(string[]): string[]
         after = nil,
 
@@ -212,10 +225,50 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
 <
 
 ==============================================================================
+JOB FILES                                                      *anrcy-job-files*
+
+If you want to do something more complex, you can create a "job file."
+A job file can be any valid lua file that returns an `anrcy.Job[]`
+
+
+Example:
+>lua
+    -- job_file_example.lua
+
+    --@type anrcy.Job[]
+    local jobs = {}
+
+    local pokemon = { "mew", "mewtwo" }
+
+    for _,v in ipairs(pokemon) do
+        jobs[#jobs + 1] = {
+            name = v,
+            type = "GET",
+            url = "https://pokeapi.co/api/v2/pokemon/" .. v,
+        }
+    end
+
+    return jobs
+<
+>lua
+    -- anrcy.Job to run the above file
+    {
+        source = "/full/path/to/job_file_example.lua"
+    }
+<
+
+Highlighting the job above and executing `:'<,'>Anrcy` will execute the 
+lua file at `source` and add any returned jobs to the queue.
+
+In the above example, two jobs will be added. One for mew and another for 
+mewtwo.
+
+
+==============================================================================
 JOB EXAMPLES                                                *anrcy-job-examples*
 
 Some basic examples of what a job would look like. 
-You can highlight run these right from this helpdoc.
+You can highlight run most of these right from this helpdoc.
 
 
 Simple GET:
@@ -261,8 +314,87 @@ Complex GET with tests and formatting:
     },
 <
 
+Basic POST:
+>lua
+    { 
+        name = "basic post test",
+        type = "POST", 
+        url = "http://localhost:8080",
+        headers = {
+            "Content-Type: application/json"
+        },
+        data = {
+            standard = { 
+                [[
+    {
+        "a": "multiline",
+        "b": "json string"
+    }
+                ]]
+            },
+        },
+    },
+<
+
+POST with lua table as body:
+
+>lua
+    { 
+        name = "test lua as post body",
+        type = "POST", 
+        url = "http://localhost:8080",
+        headers = {
+            "Content-Type: application/json"
+        },
+        data = {
+            -- this is converted to json and sent
+            lua = {
+                foo = "bar",
+                fizz = "buzz",
+                values = {
+                    { name = "one", value = 1 },
+                    { name = "two", value = 2 },
+                }
+            },
+        },
+    },
+<
+
+Weird Stuff:
+>lua
+    -- if you want to get weird with it...
+    -- this IIFE returns a job table and takes in a parameter
+    -- useful if you are making the same call often but 
+    -- want to control some part of it's data dynamically
+
+    -- You can highlight this function and run it like a normal job
+
+    (function(pokemon, game)
+        return {
+            name = pokemon,
+            type = "GET",
+            url = "https://pokeapi.co/api/v2/pokemon/" .. pokemon,
+            test = function(data)
+                local assert = require("anrcy.assert")
+                return {
+                    {
+                        name = pokemon .. " is in game Pokemon " .. game,
+                        result = assert.json_array_contains(
+                            data, 
+                            { "game_indices" },
+                            { "version", "name" },
+                            game
+                        )
+                    },
+                }
+            end
+        }
+    end)("charizard", "red"),
+<
+
+
 ==============================================================================
-TESTING RESPONSES                                           *anrcy-testing*
+TESTING RESPONSES                                                *anrcy-testing*
 
 Anrcy supports testing response data using |anrcy.Job.test|
 

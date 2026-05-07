@@ -7,7 +7,6 @@ local ui = require("anrcy.ui")
 local M = {}
 
 --- Creates a dummy notification that displays all the animations
---- this probably only works because I am using snacks notifier
 ---@param count number
 ---
 function M.animation_test(count)

@@ -338,7 +338,6 @@ for _,v in ipairs(pokemon) do
 end
 
 return jobs
-
 ```
 
 ```lua
@@ -467,12 +466,14 @@ In the above example, two jobs will be added.
     },
     data = {
         -- prefixed by '--data' in the curl command
-        standard = { [[
+        standard = {
+            [[
 {
     "Name": "lua multiline json string",
     "Description": "multiline strings work too",
 }
-        ]] }
+            ]]
+        }
     },
 }, --- this comma is important when highlighting multiple jobs
 
