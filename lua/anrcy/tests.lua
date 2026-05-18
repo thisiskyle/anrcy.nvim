@@ -1,4 +1,3 @@
-local config = require("anrcy.config")
 local animator = require("anrcy.ui.animator")
 local ui = require("anrcy.ui")
 
@@ -14,11 +13,7 @@ function M.animation_test(count)
         return
     end
 
-    local message = ""
-
-    for k,v in pairs(config.opts.animations) do
-        message = message .. k .. ": " .. animator.get_frame(v) .. "\n"
-    end
+    local message = animator.get_frame()
 
     ui.notify(message, "info", {
         id = "anrcy_animate",

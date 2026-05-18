@@ -5,6 +5,10 @@ anrcy-commands	anrcy.txt	/*anrcy-commands*
 anrcy-config	anrcy.txt	/*anrcy-config*
 anrcy-install	anrcy.txt	/*anrcy-install*
 anrcy-job-examples	anrcy.txt	/*anrcy-job-examples*
+anrcy-job-examples-additional-args	anrcy.txt	/*anrcy-job-examples-additional-args*
+anrcy-job-examples-extras	anrcy.txt	/*anrcy-job-examples-extras*
+anrcy-job-examples-get	anrcy.txt	/*anrcy-job-examples-get*
+anrcy-job-examples-post	anrcy.txt	/*anrcy-job-examples-post*
 anrcy-job-files	anrcy.txt	/*anrcy-job-files*
 anrcy-job-template	anrcy.txt	/*anrcy-job-template*
 anrcy-testing	anrcy.txt	/*anrcy-testing*

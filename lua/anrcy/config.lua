@@ -2,26 +2,6 @@
 ---@type anrcy.Config_Opts
 local default_opts = {
     global_after = nil,
-    animation = "anarchy",
-    animations = {
-        anarchy = {
-            delta_time_ms = 150,
-            frames = {
-                [[ (A)~~~~~~*]],
-                [[ (A)~~~~~* ]],
-                [[ (A)~~~~*  ]],
-                [[ (A)~~~*   ]],
-                [[ (A)~~*    ]],
-                [[ (A)~*     ]],
-                [[ (A)*      ]],
-                [[ (A)       ]],
-                [[( * )      ]],
-                [[  *        ]],
-                [[           ]],
-                [[           ]],
-            }
-        },
-    }
 }
 
 

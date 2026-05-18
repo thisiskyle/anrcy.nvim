@@ -166,7 +166,7 @@ function M.show_progress(target, completed)
     local spinner = ""
 
     if(config.opts.animation ~= nil and config.opts.animation ~= "") then
-        spinner = animator.get_frame(config.opts.animations[config.opts.animation])
+        spinner = animator.get_frame()
     end
 
     local message =  completed .. "/" .. target .. "  " .. spinner

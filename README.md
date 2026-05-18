@@ -37,7 +37,7 @@ When creating this I had a few goals in mind:
 [Usage](#usage)  
 [Commands](#commands)  
 [Sourcing Job Files](#source)  
-[Examples](#examples)  
+[Job Examples](#examples)  
 [Testing Response Data](#tests)  
 
 <br>
@@ -79,28 +79,6 @@ vim.pack.add({ src = "https://github.com/thisiskyle/anrcy" })
         --
         ---@type fun(string[]): string[]
         global_after = nil,
-
-        -- (optional) the progress notification animation
-        --
-        ---@type string
-        animation = "default",
-
-        -- (optional) custom animations
-        --
-        ---@type table<string, anrcy.Animation>
-        animations = {
-            default = {
-                delta_time_ms = 600,
-                frames = {
-                    "ᓚᘏᗢ zzz",
-                    "ᓚᘏᗢ Zzz",
-                    "ᓚᘏᗢ ZZz",
-                    "ᓚᘏᗢ ZZZ",
-                    "ᓚᘏᗢ zZZ",
-                    "ᓚᘏᗢ zzZ",
-                }
-            },
-        },
     }
 ```
 
@@ -305,6 +283,20 @@ Most of the fields for the job template are optional, `type` and `url` are all t
     },
 
     --- (optional) array of additional curl arguments as strings
+    --- currently additional arguments act a bit wierd
+    --- for some reason, this will likely break: 
+    ---
+    ---     addition_args = {
+    ---         "-u username:password"
+    ---     }
+    ---
+    --- splitting it into two strings is the best way to get
+    --- consistent results:
+    ---
+    ---     addition_args = {
+    ---         "-u", "username:password"
+    ---     }
+    --- 
     ---@type string[]
     additional_args = {},
 
@@ -359,7 +351,6 @@ Highlighting the job above and executing `:'<,'>Anrcy` will execute the
 lua file at `source` and add any returned jobs to the queue.
 
 In the above example, two jobs will be added.
-
 
 <br>
 <br>
@@ -471,7 +462,7 @@ In the above example, two jobs will be added.
     type = "POST", 
     url = "http://localhost:8080",
     headers = {
-        "Content-Type: application/json"
+        "Content-Type:application/json"
     },
     data = {
         -- prefixed by '--data' in the curl command
@@ -526,7 +517,7 @@ In the above example, two jobs will be added.
     type = "POST", 
     url = "http://localhost:8080",
     headers = {
-        "Content-Type: application/x-www-form-urlencoded"
+        "Content-Type:application/x-www-form-urlencoded"
     },
     data = {
         -- prefixed by '--data' in the curl command
@@ -536,6 +527,23 @@ In the above example, two jobs will be added.
         }
     },
 }, --- this comma is important when highlighting multiple jobs
+
+```
+
+<br>
+<br>
+
+```lua
+
+{
+    name = "get with additional args",
+    type = "GET",
+    url = "https://something.something.com",
+    additional_args = {
+        "-u", "username:password",
+        "-o", "out.text"
+    }
+}
 
 ```
 
@@ -571,7 +579,6 @@ end)("charizard"),
 
 <br>
 <br>
-
 
 ## Testing Response Data <a id="tests"></a>
 

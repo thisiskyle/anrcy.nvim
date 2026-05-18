@@ -11,7 +11,12 @@ TABLE OF CONTENTS                                             *anrcy-toc*
   Job Template                     |anrcy-job-template| 
   Job Files                        |anrcy-job-files|
   Job Examples                     |anrcy-job-examples| 
+      GET                          |anrcy-job-examples-get|
+      POST                         |anrcy-job-examples-post|
+      Additional Args              |anrcy-job-examples-additional-args|
+      Extras                       |anrcy-job-examples-extras|
   Testing Responses                |anrcy-testing|      
+
   Lua API                          |anrcy-api|          
 
 
@@ -51,7 +56,7 @@ vim.pack:
 <
 
 ==============================================================================
-CONFIGURATION                                                     *anrcy-config*
+CONFIGURATION                                                      *anrcy-config*
 
 Pass this into the setup function to configure Anrcy.
 >lua
@@ -63,33 +68,11 @@ Pass this into the setup function to configure Anrcy.
         --
         ---@type fun(string[]): string[]
         global_after = nil,
-
-        -- (optional) the progress notification animation
-        --
-        ---@type string
-        animation = "default",
-
-        -- (optional) custom animations
-        --
-        ---@type table<string, anrcy.Animation>
-        animations = {
-            default = {
-                delta_time_ms = 600,
-                frames = {
-                    "ᓚᘏᗢ zzz",
-                    "ᓚᘏᗢ Zzz",
-                    "ᓚᘏᗢ ZZz",
-                    "ᓚᘏᗢ ZZZ",
-                    "ᓚᘏᗢ zZZ",
-                    "ᓚᘏᗢ zzZ",
-                }
-            },
-        },
     }
 <
 
 ==============================================================================
-USAGE                                                              *anrcy-usage*
+USAGE                                                               *anrcy-usage*
 
 Anrcy uses Lua tables to build curl commands.
 
@@ -104,7 +87,7 @@ This file is the executed using `dofile()` and the returned job array is used.
 
 
 ==============================================================================
-COMMANDS                                                        *anrcy-commands*
+COMMANDS                                                         *anrcy-commands*
 
 :'<,'>Anrcy
     Run the currently highlighted jobs
@@ -136,7 +119,7 @@ COMMANDS                                                        *anrcy-commands*
 
 
 ==============================================================================
-JOB TEMPLATE                                                *anrcy-job-template*
+JOB TEMPLATE                                                 *anrcy-job-template*
 
 Only |type| and |url| are required.
 
@@ -145,12 +128,14 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
 >lua
     ---@type anrcy.Job
     { 
-        --- (optional) name of the job, will be used to name the response buffer
+        --- (optional) name of the job, will be used to name the response 
+        --- buffer
         ---@type string
         name = "", 
 
         --- (optional) full path of a job file to source 
-        --- the rest of the job in be ignored in favor of the file being sourced
+        --- the rest of the job in be ignored in favor of the file being 
+        --- sourced
         ---@type string
         source = "", 
 
@@ -210,6 +195,20 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
         },
 
         --- (optional) array of additional curl arguments as strings
+        --- currently additional arguments act a bit wierd
+        --- for some reason, this will likely break: 
+        ---
+        ---     addition_args = {
+        ---         "-u username:password"
+        ---     }
+        ---
+        --- splitting it into two strings is the best way to get
+        --- consistent results:
+        ---
+        ---     addition_args = {
+        ---         "-u", "username:password"
+        ---     }
+        --- 
         ---@type string[]
         additional_args = {},
 
@@ -225,7 +224,7 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
 <
 
 ==============================================================================
-JOB FILES                                                      *anrcy-job-files*
+JOB FILES                                                       *anrcy-job-files*
 
 If you want to do something more complex, you can create a "job file."
 A job file can be any valid lua file that returns an `anrcy.Job[]`
@@ -265,13 +264,13 @@ mewtwo.
 
 
 ==============================================================================
-JOB EXAMPLES                                                *anrcy-job-examples*
+JOB EXAMPLES                                                 *anrcy-job-examples*
 
 Some basic examples of what a job would look like. 
 You can highlight run most of these right from this helpdoc.
 
 
-Simple GET:
+Simple GET:                                              *anrcy-job-examples-get*
 
 >lua
     {
@@ -314,7 +313,7 @@ Complex GET with tests and formatting:
     },
 <
 
-Basic POST:
+Basic POST:                                             *anrcy-job-examples-post* 
 >lua
     { 
         name = "basic post test",
@@ -360,7 +359,30 @@ POST with lua table as body:
     },
 <
 
-Weird Stuff:
+Additional Curl Arguments:                   *anrcy-job-examples-additional-args*
+>lua
+    {
+        name = "get with additional args",
+        type = "GET",
+        url = "https://something.something.com",
+        -- currently additional arguments are a bit wierd
+        -- because of the space, this will likely break: 
+        --
+        --     additional_args = {
+        --        "-u username:password"
+        --     }
+        --
+        -- splitting the string into separate parts will give the best results
+        additional_args = {
+            "-i",
+            "-u", "username:password",
+            "-o", "out.text"
+        }
+    }
+>
+
+
+Weird Stuff:                                          *anrcy-job-examples-extras*
 >lua
     -- if you want to get weird with it...
     -- this IIFE returns a job table and takes in a parameter
@@ -392,9 +414,8 @@ Weird Stuff:
     end)("charizard", "red"),
 <
 
-
 ==============================================================================
-TESTING RESPONSES                                                *anrcy-testing*
+TESTING RESPONSES                                                 *anrcy-testing*
 
 Anrcy supports testing response data using |anrcy.Job.test|
 
@@ -420,5 +441,7 @@ Example test function:
         }
     end
 <
+
+
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:

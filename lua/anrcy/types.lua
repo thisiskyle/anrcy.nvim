@@ -5,8 +5,6 @@
 
 ---@class anrcy.Config_Opts
 ---@field global_after? fun(data: string[]): string[]
----@field animation? string
----@field animations? table<string, anrcy.Animation>
 
 ---@class anrcy.Response_Data
 ---@field payload string[]
