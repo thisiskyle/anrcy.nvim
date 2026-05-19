@@ -79,6 +79,11 @@ vim.pack.add({ src = "https://github.com/thisiskyle/anrcy" })
         --
         ---@type fun(string[]): string[]
         global_after = nil,
+
+        -- (optional) play the progress animation
+        --
+        ---@type boolean
+        animate = true
     }
 ```
 

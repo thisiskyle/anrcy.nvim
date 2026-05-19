@@ -68,6 +68,11 @@ Pass this into the setup function to configure Anrcy.
         --
         ---@type fun(string[]): string[]
         global_after = nil,
+
+        -- (optional) play the progress animation
+        --
+        ---@type boolean
+        animate = true
     }
 <
 

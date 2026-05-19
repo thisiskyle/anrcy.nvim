@@ -2,6 +2,7 @@
 ---@type anrcy.Config_Opts
 local default_opts = {
     global_after = nil,
+    animate = true
 }
 
 

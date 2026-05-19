@@ -29,9 +29,6 @@ local function insert_with_prefix(cmd_table, data, prefix)
         cmd_table[#cmd_table + 1] = prefix
         cmd_table[#cmd_table + 1] = data
     end
-
-    -- todo: we should probably handle a non string
-    --       maybe return an error and skip this job
 end
 
 
@@ -49,11 +46,6 @@ function M.build(request)
 
     if(request.additional_args) then
         for _,v in ipairs(request.additional_args) do
-            -- todo: maybe here we should split the string at any spaces we find
-            --       and insert each part separately
-            --       that way the user can do this "-u username:pass"
-            --       instead of doing this "-u", "username:pass"
-            --       or maybe we don't care?
             curl_command[#curl_command + 1] = v
         end
     end
@@ -110,8 +102,8 @@ function M.build(request)
     end
 
     curl_command[#curl_command + 1] = request.url
-
     return curl_command
+
 end
 
 return M
