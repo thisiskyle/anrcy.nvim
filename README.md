@@ -1,29 +1,31 @@
-# Anrcy - Another Neovim Rest Client... Yo
+# Anrcy - Another Neovim Rest Client, Yo
 
 <br>
 <br>
 
 ## About
 
-Another REST client plugin for Neovim
+Essentially just a plugin for turning lua tables into curl commands. While there
+are already a few plugins that do this, I felt that many of those were either overkill for
+my use case or overcomplicated what I thought was a straight forward concept. 
+I tried to keep things simple. Make a REST call, display the response in a buffer.
 
-Essentially just a plugin for turning lua tables into curl commands. And while there
-are many plugins that solve this issue, I felt that many of those were simply overkill for
-my use case.
+While this plugin does allow for some more complex actions (like allowing you to source job files)
+the basic use cases of the app had a few simple goals:
 
-When creating this I had a few goals in mind: 
-
-- Easily sketch out a request and run it from anywhere.
-  Wether it is in a comment or a dedicated file, if you can highlight 
+- Easily sketch out a request and run it from anywhere neovim can go.
+  Whether it is in a comment or a dedicated file, if you can highlight 
   it, you can run it.
 
-- Write tests in lua for easy neovim compatibility without outside
+- Everything is in lua for easy neovim compatibility without outside
   dependencies.
 
-- Simple, familiar UI. 
-  Everything comes out in a single buffer for each response, easily naviagted
-  and manipulated with standard vim motions.
+- Simple user interface. 
+  Responses show in a single buffer, easily naviagted with standard vim motions. 
+  No tabs or fancy windows needed.
 
+Please note that this is a personal project I only focused on my needs. 
+Some curl flags and features might not work as expected.
 
 <br>
 <br>
@@ -73,8 +75,11 @@ vim.pack.add({ src = "https://github.com/thisiskyle/anrcy" })
 ```lua
     ---@type anrcy.Config    
     {
-        -- (optional) global version of anrcy.Job.after and will run for 
-        -- all jobs
+        -- (optional) Global version of anrcy.Job.after and will run for
+        -- all jobs. This function is used for modifying the payload
+        -- then returning the result of the modification. Whatever string[]
+        -- comes out of this function, is what will be displayed in the buffer.
+        --
         -- NOTE: anrcy.Job.after takes priority if set
         --
         ---@type fun(string[]): string[]
@@ -85,6 +90,15 @@ vim.pack.add({ src = "https://github.com/thisiskyle/anrcy" })
         ---@type boolean
         animate = true
     }
+```
+
+### Example using jq to format json responses
+
+```lua
+    global_after = function(payload)
+        local out = vim.fn.system({ "jq", "." }, table.concat(payload))
+        return vim.split(out, "\n", { plain = true })
+    end
 ```
 
 
@@ -321,8 +335,11 @@ Most of the fields for the job template are optional, `type` and `url` are all t
 
 ## Sourcing Job Files <a id="source"></a>
 
-If you want to do something more complex, you can create a "job file."
-A job file can be any valid lua file that returns an `anrcy.Job[]`
+Sourcing a job file allows you to do more complex things to create an `anrcy.Job`
+
+Anything you can do with lua can be done in a job file as long as the resulting
+output is an `anrcy.Job[]`
+
 
 Example:
 

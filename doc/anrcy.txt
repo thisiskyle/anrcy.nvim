@@ -23,12 +23,10 @@ TABLE OF CONTENTS                                             *anrcy-toc*
 ==============================================================================
 INTRODUCTION                                                      *anrcy*
 
-Anrcy is a REST client for Neovim.
-
-It is primarily a plugin for turning lua tables into curl commands
+This is primarily a plugin for turning lua tables into curl commands
 and executing them. 
 
-Not all curl flags and features are accounted for.
+NOTE: Some curl flags and features might not work as expected
 
 One request results in one response buffer, containing:
 - test results
@@ -62,8 +60,11 @@ Pass this into the setup function to configure Anrcy.
 >lua
     ---@type anrcy.Config    
     {
-        -- (optional) global version of anrcy.Job.after and will run for 
-        -- all jobs
+        -- (optional) Global version of anrcy.Job.after and will run for
+        -- all jobs. This function is used for modifying the payload
+        -- then returning the result of the modification. Whatever string[]
+        -- comes out of this function, is what will be displayed in the buffer.
+        --
         -- NOTE: anrcy.Job.after takes priority if set
         --
         ---@type fun(string[]): string[]
@@ -74,6 +75,14 @@ Pass this into the setup function to configure Anrcy.
         ---@type boolean
         animate = true
     }
+<
+
+Example: Using jq to format json response (requires jq to be installed)
+>lua
+    global_after = function(payload)
+        local out = vim.fn.system({ "jq", "." }, table.concat(payload))
+        return vim.split(out, "\n", { plain = true })
+    end
 <
 
 ==============================================================================
@@ -87,8 +96,9 @@ To run a request:
 
 The response data and test results are displayed in a new buffer.
 
-Internally, your highlighted text is wrapped in an array and inserted into a temp file.
-This file is the executed using `dofile()` and the returned job array is used.  
+Internally, your highlighted text is wrapped in an array and inserted 
+into a temp file. This file is the executed using `dofile()` and the 
+returned job array is used.  
 
 
 ==============================================================================
@@ -217,8 +227,10 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
         ---@type string[]
         additional_args = {},
 
-        --- (optional) runs after the response is loaded into the buffer, 
-        --- used mostly for formatting
+        -- (optional) This function is used for modifying the payload
+        -- then returning the result of the modification. Whatever string[]
+        -- comes out of this function, is what will be displayed in the buffer.
+        --
         ---@type fun(string[]): string[]
         after = nil,
 
@@ -231,8 +243,11 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
 ==============================================================================
 JOB FILES                                                       *anrcy-job-files*
 
-If you want to do something more complex, you can create a "job file."
-A job file can be any valid lua file that returns an `anrcy.Job[]`
+Sourcing a job file allows you to do more complex things to 
+create an `anrcy.Job`
+
+Anything you can do with lua can be done in a job file as long as the 
+resulting output is an `anrcy.Job[]`
 
 
 Example:
@@ -261,7 +276,7 @@ Example:
     }
 <
 
-Highlighting the job above and executing `:'<,'>Anrcy` will execute the 
+Highlighting the source job above and executing `:'<,'>Anrcy` will execute the 
 lua file at `source` and add any returned jobs to the queue.
 
 In the above example, two jobs will be added. One for mew and another for 
