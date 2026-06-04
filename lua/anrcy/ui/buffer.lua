@@ -55,22 +55,26 @@ end
 
 ---@param bufn number
 ---@param data string[]
+---@param start_index number
+---@param end_index number
 ---
-function M.write(bufn, data)
+local function set_lines(bufn, data, start_index, end_index)
     if(not data) then
         return
     end
     enableModifiable(bufn)
-    vim.api.nvim_buf_set_lines(bufn, 0, -1, false, data)
+    vim.api.nvim_buf_set_lines(bufn, start_index, end_index, false, data)
     disableModifiable(bufn)
 end
 
 
----@param bufn number
----@param data string[]
----
-function M.insert_at_top(bufn, data)
-    vim.api.nvim_buf_set_lines(bufn, 0, 0, false, data)
+function M.write(bufn, data)
+    set_lines(bufn, data, 0, -1)
+end
+
+
+function M.write_at_top(bufn, data)
+    set_lines(bufn, data, 0, 0)
 end
 
 

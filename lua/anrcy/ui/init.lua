@@ -64,33 +64,48 @@ function M.show_response(responses)
 
         else
 
-            local bufn = create_buffer({
-                name = r.name,
-                singleton = false,
-                payload = r.data.payload
-            })
+            local lines = {}
 
-            buffer.write(bufn, r.data.payload)
-
-            local next = next
-
-            if(next(r.data.curl_header)) then
-                buffer.insert_at_top(bufn, { " ", " " })
-                buffer.insert_at_top(bufn, r.data.curl_header)
+            if(r.test_results) then
+                local results = utils.format_test_results(r.test_results)
+                for i = 1, #results do
+                    lines[#lines + 1] = results[i]
+                end
+                lines[#lines + 1] = " "
+                lines[#lines + 1] = " "
             end
 
             if(r.show_curl) then
                 local cmd = utils.get_curl_string(r.curl_cmd)
-                buffer.insert_at_top(bufn, { " ", " " })
-                buffer.insert_at_top(bufn, { cmd })
+                lines[#lines + 1] = cmd
+                lines[#lines + 1] = " "
+                lines[#lines + 1] = " "
             end
 
-            if(r.test_results) then
-                buffer.insert_at_top(bufn, { " ", " " })
-                buffer.insert_at_top(bufn, utils.format_test_results(r.test_results))
+            local next = next
+
+            if(next(r.data.curl_header)) then
+                for i = 1, #r.data.curl_header do
+                    lines[#lines + 1] = r.data.curl_header[i]
+                end
+                lines[#lines + 1] = " "
+                lines[#lines + 1] = " "
             end
 
+            for i = 1, #r.data.payload do
+                lines[#lines + 1] = r.data.payload[i]
+            end
+
+
+            local bufn = create_buffer({
+                name = r.name,
+                singleton = false,
+                payload = {}
+            })
+
+            buffer.write(bufn, lines)
             buffers[#buffers + 1] = bufn
+
         end
 
     end
