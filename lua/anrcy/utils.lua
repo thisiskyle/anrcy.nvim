@@ -75,7 +75,7 @@ end
 
 
 --- Remove line endings from the provided data
---- @param data string
+--- @param data string[]
 --- @return table
 ---
 function M.remove_line_endings(data)

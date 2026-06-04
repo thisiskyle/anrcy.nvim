@@ -3,14 +3,32 @@
 local M = {}
 
 
+
 ---@param bufn number
 ---
-function M.apply_basic_buf_settings(bufn)
+local function enableModifiable(bufn)
+    vim.api.nvim_set_option_value("modifiable", true, { buf = bufn })
+end
+
+---@param bufn number
+---
+local function disableModifiable(bufn)
+    vim.api.nvim_set_option_value("modifiable", false, { buf = bufn })
+    vim.api.nvim_set_option_value("modified", false, { buf = bufn })
+end
+
+
+---@param bufn number
+---
+local function apply_basic_buf_settings(bufn)
     vim.api.nvim_set_option_value("fileformat", "unix", { buf = bufn })
     vim.api.nvim_set_option_value("buftype", "nofile", { buf = bufn })
     vim.api.nvim_set_option_value("filetype", "text", { buf = bufn })
     vim.api.nvim_set_option_value("swapfile", false, { buf = bufn })
+    vim.api.nvim_set_option_value("bufhidden", "hide", { buf = bufn })
+    disableModifiable(bufn)
 end
+
 
 
 --- starts at given id and increments until it finds 
@@ -42,7 +60,9 @@ function M.write(bufn, data)
     if(not data) then
         return
     end
+    enableModifiable(bufn)
     vim.api.nvim_buf_set_lines(bufn, 0, -1, false, data)
+    disableModifiable(bufn)
 end
 
 
@@ -67,7 +87,7 @@ function M.create_buffer(name, singleton)
         vim.api.nvim_buf_set_name(_bufn, M.find_buf_name(_name, 1))
     end
 
-    M.apply_basic_buf_settings(_bufn)
+    apply_basic_buf_settings(_bufn)
 
     return _bufn
 end

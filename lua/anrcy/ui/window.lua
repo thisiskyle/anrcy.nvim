@@ -1,6 +1,8 @@
 local M = {}
 
 
+local tag = "anrcy_response_tag"
+
 
 --- Calculate the values to center and size a floating window
 ---
@@ -19,8 +21,31 @@ function M.calc_float_window()
 end
 
 
+function M.setWindow(winid, bufn)
+    vim.api.nvim_win_set_buf(winid, bufn)
+end
+
+
 function M.create(bufn, opts)
-    return vim.api.nvim_open_win(bufn, true, opts)
+    local win = vim.api.nvim_open_win(bufn, true, opts)
+    vim.api.nvim_win_set_var(win, tag, true)
+    return win
+end
+
+
+function M.focus(winid)
+    vim.api.nvim_set_current_win(winid)
+end
+
+
+function M.findResponseWindow()
+    for _,win in ipairs(vim.api.nvim_list_wins()) do
+        local ok,value = pcall(vim.api.nvim_win_get_var, win, tag)
+        if(ok and value) then
+            return win
+        end
+    end
+    return nil
 end
 
 

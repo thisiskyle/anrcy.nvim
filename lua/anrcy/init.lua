@@ -1,4 +1,3 @@
-require("anrcy.commands")
 
 local config = require("anrcy.config")
 local ui = require("anrcy.ui")
@@ -10,6 +9,8 @@ local M = {}
 ---
 function M.setup(opts)
     config.setup(opts)
+    require("anrcy.commands").setup()
+    require("anrcy.ui.quickfix").use_custom_quickfix_swapping()
 end
 
 

@@ -4,6 +4,7 @@ local config = require("anrcy.config")
 local animator = require("anrcy.ui.animator")
 local buffer = require("anrcy.ui.buffer")
 local window = require("anrcy.ui.window")
+local quickfix = require("anrcy.ui.quickfix")
 
 
 ---@class anrcy.Ui
@@ -21,27 +22,16 @@ local function create_buffer(opts)
     return bufn
 end
 
-
+---@param buffers number[]
+---
 local function open_quickfix_layout(buffers)
-
-    local qf_items = {}
-
-    for _,v in ipairs(buffers) do
-        qf_items[#qf_items + 1] = {
-            bufnr = v,
-            lnum = 1,
-            col = 1,
-            title = "Anrcy Responses"
-        }
-    end
-
-    vim.fn.setqflist(qf_items, "r")
-    window.create(0, { split = "right" })
+    quickfix.create(buffers)
+    local win = window.create(0, { split = "right"})
     vim.cmd("cfirst")
-
     if(#buffers > 1) then
         vim.cmd("copen")
     end
+    window.focus(win)
 end
 
 
@@ -138,6 +128,8 @@ function M.show_history(history)
     })
 
     vim.api.nvim_set_option_value("modifiable", false, { buf = bufn })
+    vim.wo.cursorline = true
+
     return bufn
 end
 
