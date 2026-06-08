@@ -24,10 +24,21 @@ local request_types = {
 }
 
 
+--- Insert the provided prefix and the command into the provided table
+---@param cmd_table table table to insert into
+---@param data table array of data arguments to add to the curl command
+---@param prefix string prefix for each of the data arguments
+---
 local function insert_with_prefix(cmd_table, data, prefix)
-    if(type(data) == "string") then
-        cmd_table[#cmd_table + 1] = prefix
-        cmd_table[#cmd_table + 1] = data
+    if(data == nil) then
+        return
+    end
+
+    for _,v in ipairs(data) do
+        if(type(data) == "string") then
+            cmd_table[#cmd_table + 1] = prefix
+            cmd_table[#cmd_table + 1] = v
+        end
     end
 end
 
@@ -54,48 +65,21 @@ function M.build(request)
         curl_command[#curl_command + 1] = v
     end
 
-    if(request.headers ~= nil) then
-        for _,v in ipairs(request.headers) do
-            insert_with_prefix(curl_command, v, "--header")
-        end
-    end
+
+    insert_with_prefix(curl_command, request.headers, "--header")
 
 
     if(request.data) then
 
-        if(request.data.urlencode) then
-            for _,v in ipairs(request.data.urlencode) do
-                insert_with_prefix(curl_command, v, "--data-urlencode")
-            end
-        end
-
-        if(request.data.raw) then
-            for _,v in ipairs(request.data.raw) do
-                insert_with_prefix(curl_command, v, "--data-raw")
-            end
-        end
+        insert_with_prefix(curl_command, request.data.urlencode, "--data-urlencode")
+        insert_with_prefix(curl_command, request.data.raw, "--data-raw")
+        insert_with_prefix(curl_command, request.data.standard, "--data")
+        insert_with_prefix(curl_command, request.data.binary, "--data-binary")
+        insert_with_prefix(curl_command, request.data.form, "--form")
 
         if(request.data.lua) then
             if(_G.type(request.data.lua) == "table") then
-                insert_with_prefix(curl_command, vim.json.encode(request.data.lua), "--data")
-            end
-        end
-
-        if(request.data.standard) then
-            for _,v in ipairs(request.data.standard) do
-                insert_with_prefix(curl_command, v, "--data")
-            end
-        end
-
-        if(request.data.binary) then
-            for _,v in ipairs(request.data.binary) do
-                insert_with_prefix(curl_command, v, "--data-binary")
-            end
-        end
-
-        if(request.data.form) then
-            for _,v in ipairs(request.data.form) do
-                insert_with_prefix(curl_command, v, "--form")
+                insert_with_prefix(curl_command, { vim.json.encode(request.data.lua) }, "--data")
             end
         end
 
