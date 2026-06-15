@@ -35,7 +35,7 @@ local function insert_with_prefix(cmd_table, data, prefix)
     end
 
     for _,v in ipairs(data) do
-        if(type(data) == "string") then
+        if(type(v) == "string") then
             cmd_table[#cmd_table + 1] = prefix
             cmd_table[#cmd_table + 1] = v
         end
@@ -70,6 +70,7 @@ function M.build(request)
 
 
     if(request.data) then
+
 
         insert_with_prefix(curl_command, request.data.urlencode, "--data-urlencode")
         insert_with_prefix(curl_command, request.data.raw, "--data-raw")
