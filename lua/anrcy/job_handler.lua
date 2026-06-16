@@ -4,7 +4,6 @@ local utils = require("anrcy.utils")
 local ui = require("anrcy.ui")
 local curl = require("anrcy.curl")
 
-
 ---@type anrcy.Response[]
 local active_responses = {}
 
@@ -13,7 +12,6 @@ local completed_jobs = {}
 
 ---@type boolean[]
 local inprogress_jobs = {}
-
 
 
 local function clear_jobs()
@@ -65,7 +63,7 @@ end
 ---@param jobs anrcy.Job[]
 ---@return anrcy.Job[]
 ---
-local function check_jobs(jobs)
+local function organize_jobs(jobs)
     local full_list = {}
 
     for _,j in ipairs(jobs) do
@@ -73,6 +71,10 @@ local function check_jobs(jobs)
             local extra_jobs = dofile(j.source)
             for _,x in ipairs(extra_jobs) do
                 full_list[#full_list + 1] = x
+            end
+        elseif(utils.is_array(j)) then
+            for _,v in ipairs(j) do
+                full_list[#full_list + 1] = v
             end
         elseif(j ~= nil) then
             full_list[#full_list + 1] = j
@@ -96,7 +98,9 @@ local M = {}
 ---
 function M.sync(jobs)
     local responses = {}
-    local valid_jobs = check_jobs(jobs)
+    local valid_jobs = organize_jobs(jobs)
+
+    require("anrcy.history_manager").archive(valid_jobs)
 
     for _,j in ipairs(valid_jobs) do
 
@@ -138,7 +142,9 @@ end
 ---@param on_complete fun(data?: anrcy.Response[]) on_complete callback handler
 ---
 function M.async(jobs, on_complete)
-    local valid_jobs = check_jobs(jobs)
+
+    local valid_jobs = organize_jobs(jobs)
+    require("anrcy.history_manager").archive(valid_jobs)
 
     for _,j in ipairs(valid_jobs) do
 

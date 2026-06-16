@@ -23,7 +23,6 @@ function M.process_jobs(jobs)
         return
     end
 
-    require("anrcy.history_manager").archive(jobs)
     require("anrcy.job_handler").async(jobs, function(responses)
         ui.show_response(responses)
     end)

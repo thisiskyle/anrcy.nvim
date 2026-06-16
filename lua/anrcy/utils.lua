@@ -21,6 +21,23 @@ function M.insert_template()
 end
 
 
+--- Return true if t is most likely an array
+---@param t table
+---@return boolean
+---
+function M.is_array(t)
+    if(t == nil or type(t) ~= "table") then
+        return false
+    end
+    -- objects always return 0 length
+    if(#t > 0) then
+        return true
+    end
+    return false
+end
+
+
+
 ---@param arr string[]
 ---
 function M.get_curl_string(arr)
