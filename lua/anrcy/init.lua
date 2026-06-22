@@ -29,8 +29,7 @@ function M.process_jobs(jobs)
 end
 
 
---- expects visually selected text to be a single, or multiple anrcy.Jobs
---- then runs those jobs and displays the output
+--- pulls visually selected text, then tries to process those jobs
 ---
 function M.run_highlighted_jobs()
     local jobs = require("anrcy.utils").get_visual_selection_as_lua()

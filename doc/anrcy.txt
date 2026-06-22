@@ -213,14 +213,14 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
         --- currently additional arguments act a bit wierd
         --- for some reason, this will likely break: 
         ---
-        ---     addition_args = {
+        ---     additional_args = {
         ---         "-u username:password"
         ---     }
         ---
         --- splitting it into two strings is the best way to get
         --- consistent results:
         ---
-        ---     addition_args = {
+        ---     additional_args = {
         ---         "-u", "username:password"
         ---     }
         --- 
@@ -313,14 +313,12 @@ Complex GET with tests and formatting:
         additional_args = { 
             "-i" 
         },
-        ---@param payload string[]
-        ---@return string[]
+
         after = function(payload)
             local out = vim.fn.system({ "jq", "." }, table.concat(payload))
             return vim.split(out, "\n", { plain = true })
         end,
-        ---@param payload string[]
-        ---@return Test_Result[]
+
         test = function(payload)
             local assert = require("anrcy.assert")
             local path = { "abilities", 1, "ability", "name" }
@@ -385,8 +383,8 @@ Additional Curl Arguments:                   *anrcy-job-examples-additional-args
         name = "get with additional args",
         type = "GET",
         url = "https://something.something.com",
-        -- currently additional arguments are a bit wierd
-        -- because of the space, this will likely break: 
+        -- currently additional arguments act a bit wierd,
+        -- this will likely break: 
         --
         --     additional_args = {
         --        "-u username:password"
@@ -420,7 +418,7 @@ Weird Stuff:                                          *anrcy-job-examples-extras
                 local assert = require("anrcy.assert")
                 return {
                     {
-                        name = pokemon .. " is in game Pokemon " .. game,
+                        name = pokemon .. " is in Pokemon " .. game,
                         result = assert.json_array_contains(
                             data, 
                             { "game_indices" },
