@@ -4,7 +4,7 @@ local M = {}
 function M.insert_template()
     local template = [[{
     name = "",
-    type = "",
+    method = "",
     url = "",
     headers = { },
     additional_args = { },

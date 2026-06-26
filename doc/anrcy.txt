@@ -156,7 +156,7 @@ Use |:AnrcyTemplate| to insert a job template at the cursor.
 
         --- (required) request type  [ "GET", "POST", etc ]
         ---@type string
-        type = "",
+        method = "",
 
         --- (required) request url
         ---@type string
@@ -262,7 +262,7 @@ Example:
     for _,v in ipairs(pokemon) do
         jobs[#jobs + 1] = {
             name = v,
-            type = "GET",
+            method = "GET",
             url = "https://pokeapi.co/api/v2/pokemon/" .. v,
         }
     end
@@ -295,7 +295,7 @@ Simple GET:                                              *anrcy-job-examples-get
 >lua
     {
         name = "pikachu",
-        type = "GET",
+        method = "GET",
         url  = "https://pokeapi.co/api/v2/pokemon/pikachu",
     },
 <
@@ -305,7 +305,7 @@ Complex GET with tests and formatting:
 >lua
     {
         name = "ditto",
-        type = "GET",
+        method = "GET",
         url  = "https://pokeapi.co/api/v2/pokemon/ditto",
         headers = { 
             "name:value" 
@@ -335,7 +335,7 @@ Basic POST:                                             *anrcy-job-examples-post
 >lua
     { 
         name = "basic post test",
-        type = "POST", 
+        method = "POST", 
         url = "http://localhost:8080",
         headers = {
             "Content-Type: application/json"
@@ -358,7 +358,7 @@ POST with lua table as body:
 >lua
     { 
         name = "test lua as post body",
-        type = "POST", 
+        method = "POST", 
         url = "http://localhost:8080",
         headers = {
             "Content-Type: application/json"
@@ -381,7 +381,7 @@ Additional Curl Arguments:                   *anrcy-job-examples-additional-args
 >lua
     {
         name = "get with additional args",
-        type = "GET",
+        method = "GET",
         url = "https://something.something.com",
         -- currently additional arguments act a bit wierd,
         -- this will likely break: 
@@ -412,7 +412,7 @@ Weird Stuff:                                          *anrcy-job-examples-extras
     (function(pokemon, game)
         return {
             name = pokemon,
-            type = "GET",
+            method = "GET",
             url = "https://pokeapi.co/api/v2/pokemon/" .. pokemon,
             test = function(data)
                 local assert = require("anrcy.assert")

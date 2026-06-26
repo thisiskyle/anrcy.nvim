@@ -46,7 +46,7 @@ function M.get_highlighted_url()
     require("anrcy").process_jobs({
         {
             name = "anrcy_quick_get",
-            type = "GET",
+            method = "GET",
             url = _url
         }
     })

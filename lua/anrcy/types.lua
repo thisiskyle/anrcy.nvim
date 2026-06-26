@@ -21,7 +21,7 @@
 ---@field name? string
 ---@field source? string
 ---@field show_curl? boolean
----@field type string
+---@field method string
 ---@field url string
 ---@field headers? string[]
 ---@field data? table[]

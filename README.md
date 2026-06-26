@@ -121,7 +121,7 @@ This file is the executed using `dofile()` and the returned job array is used.
 return {
     { 
         name = "job A", 
-        type = "GET",
+        method = "GET",
         url = "https://whatever.com"
     }
 }
@@ -142,7 +142,7 @@ Here is an example of a request stored in a comment above a function call for ea
  
 { 
     name = "ditto", 
-    type = "GET",
+    method = "GET",
     url = "https://pokeapi.co/api/v2/pokemon/ditto"
 }
 
@@ -171,7 +171,7 @@ vim.keymap.set(
         require("anrcy").process_jobs({
             {
                 name = "ditto",
-                type = "GET",
+                method = "GET",
                 url = "https://pokeapi.co/api/v2/pokemon/ditto",
             },
         })
@@ -189,7 +189,7 @@ require("anrcy.job_handler").async(
     {
         {
             name = "ditto",
-            type = "GET",
+            method = "GET",
             url = "https://pokeapi.co/api/v2/pokemon/ditto",
         }
     },
@@ -204,7 +204,7 @@ require("anrcy.job_handler").async(
 local responses = require("anrcy.job_handler").sync({
     {
         name = "ditto",
-        type = "GET",
+        method = "GET",
         url = "https://pokeapi.co/api/v2/pokemon/ditto",
     }
 })
@@ -255,7 +255,7 @@ Most of the fields for the job template are optional, `type` and `url` are all t
 
     --- (required) request type  [ "GET", "POST", etc ]
     ---@type string
-    type = "",
+    method = "",
 
     --- (required) request url
     ---@type string
@@ -354,7 +354,7 @@ local pokemon = { "mew", "mewtwo" }
 for _,v in ipairs(pokemon) do
     jobs[#jobs + 1] = {
         name = v,
-        type = "GET",
+        method = "GET",
         url = "https://pokeapi.co/api/v2/pokemon/" .. v,
     }
 end
@@ -386,7 +386,7 @@ In the above example, two jobs will be added.
 
 { 
     name = "pikachu", 
-    type = "GET", 
+    method = "GET", 
     url = "https://pokeapi.co/api/v2/pokemon/pikachu", 
 }, -- this comma is important when highlighting multiple jobs
 
@@ -402,7 +402,7 @@ In the above example, two jobs will be added.
 -- more complex GET request with headers, additional args, formatting and test functions
 { 
     name = "ditto", 
-    type = "GET", 
+    method = "GET", 
     url = "https://pokeapi.co/api/v2/pokemon/ditto", 
     headers = { 
         "name:value"
@@ -455,7 +455,7 @@ In the above example, two jobs will be added.
 
 { 
     name = "get example",
-    type = "GET", 
+    method = "GET", 
     url = "https://mockapi.com/api",
     headers = {
         "name:value"
@@ -481,7 +481,7 @@ In the above example, two jobs will be added.
 
 { 
     name = "another post example",
-    type = "POST", 
+    method = "POST", 
     url = "http://localhost:8080",
     headers = {
         "Content-Type:application/json"
@@ -511,7 +511,7 @@ In the above example, two jobs will be added.
 
 { 
     name = "post example",
-    type = "POST", 
+    method = "POST", 
     url = "http://localhost:8080",
     headers = {
         "Content-Type: application/json"
@@ -536,7 +536,7 @@ In the above example, two jobs will be added.
 
 { 
     name = "another post example",
-    type = "POST", 
+    method = "POST", 
     url = "http://localhost:8080",
     headers = {
         "Content-Type:application/x-www-form-urlencoded"
@@ -559,7 +559,7 @@ In the above example, two jobs will be added.
 
 {
     name = "get with additional args",
-    type = "GET",
+    method = "GET",
     url = "https://something.something.com",
     additional_args = {
         "-u", "username:password",
@@ -583,7 +583,7 @@ In the above example, two jobs will be added.
 (function(pokemon)
     return {
         name = pokemon,
-        type = "GET",
+        method = "GET",
         url = "https://pokeapi.co/api/v2/pokemon/" .. pokemon,
         test = function(data)
             local assert = require("anrcy.assert")

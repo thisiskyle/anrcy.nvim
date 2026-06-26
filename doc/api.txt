@@ -27,7 +27,7 @@ proccess_jobs({jobs})                                       *anrcy.process_jobs*
     require("anrcy").process_jobs({
         {
             name = "ditto",
-            type = "GET",
+            method = "GET",
             url = "https://pokeapi.co/api/v2/pokemon/ditto",
         },
     })
@@ -56,7 +56,7 @@ async({jobs}, {callback})
       {
           {
               name = "ditto",
-              type = "GET",
+              method = "GET",
               url = "https://pokeapi.co/api/v2/pokemon/ditto",
           }
       },
@@ -81,7 +81,7 @@ sync({jobs})
     local responses = require("anrcy.job_handler").sync({
         {
             name = "ditto",
-            type = "GET",
+            method = "GET",
             url = "https://pokeapi.co/api/v2/pokemon/ditto",
         }
     })

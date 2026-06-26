@@ -7,7 +7,7 @@
 ---@field form? string[]
 
 ---@class anrcy.HttpRequest table with the data needed to make an http request
----@field type string
+---@field method string
 ---@field url string
 ---@field headers? string[]
 ---@field additional_args? string[]
@@ -50,7 +50,7 @@ end
 function M.build(request)
 
     local curl_command = {}
-    local request_type = string.lower(request.type)
+    local request_type = string.lower(request.method)
 
     curl_command[#curl_command + 1] = "curl"
     curl_command[#curl_command + 1] = "-s"

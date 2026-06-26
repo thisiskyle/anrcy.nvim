@@ -49,7 +49,7 @@ end
 ---
 local function job_to_curl(j)
     return j.command or curl.build({
-        type = j.type,
+        method = j.method,
         url = j.url,
         headers = j.headers,
         data = j.data,
@@ -251,7 +251,7 @@ function M.show_commands_only(jobs)
     for _,j in ipairs(jobs) do
 
         local request = {
-            type = j.type,
+            method = j.method,
             url = j.url,
             headers = j.headers,
             data = j.data,
