@@ -168,7 +168,7 @@ end
 ---@param target number
 ---@param completed number
 ---
-function M.show_progress(target, completed)
+function M.show_progress_animated(target, completed)
 
     local spinner = ""
 
@@ -177,6 +177,22 @@ function M.show_progress(target, completed)
     end
 
     local message =  completed .. "/" .. target .. "  " .. spinner
+
+    if(completed == target) then
+        message = "Complete!"
+    end
+
+    M.notify(message, "info", { id = "anrcy_progress", title = "Progress" })
+
+end
+
+
+---@param target number
+---@param completed number
+---
+function M.show_progress(target, completed)
+
+    local message =  completed .. "/" .. target
 
     if(completed == target) then
         message = "Complete!"

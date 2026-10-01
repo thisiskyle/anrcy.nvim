@@ -1,4 +1,3 @@
-
 local config = require("anrcy.config")
 local utils = require("anrcy.utils")
 local ui = require("anrcy.ui")
@@ -21,26 +20,31 @@ local function clear_jobs()
 end
 
 
-local function monitor_progress()
+local function check_progress()
     local run = 0
     local done = 0
 
-    for _,_ in pairs(inprogress_jobs) do
+    for _, _ in pairs(inprogress_jobs) do
         run = run + 1
     end
 
-    for _,_ in pairs(completed_jobs) do
+    for _, _ in pairs(completed_jobs) do
         done = done + 1
     end
 
-    ui.show_progress(run + done, done)
+    return { run = run, done = done }
+end
 
-    if(run == 0) then
+
+local function monitor_jobs()
+    local progress = check_progress()
+    -- ui.show_progress(progress.run + progress.done, progress.done)
+    -- ui.show_progress_animated(progress.run + progress.done, progress.done)
+    if (progress.run == 0) then
         clear_jobs()
         return
     end
-
-    vim.defer_fn(monitor_progress, 60)
+    vim.defer_fn(monitor_jobs, 60)
 end
 
 
@@ -66,17 +70,17 @@ end
 local function organize_jobs(jobs)
     local full_list = {}
 
-    for _,j in ipairs(jobs) do
-        if(j.source) then
+    for _, j in ipairs(jobs) do
+        if (j.source) then
             local extra_jobs = dofile(j.source)
-            for _,x in ipairs(extra_jobs) do
+            for _, x in ipairs(extra_jobs) do
                 full_list[#full_list + 1] = x
             end
-        elseif(utils.is_array(j)) then
-            for _,v in ipairs(j) do
+        elseif (utils.is_array(j)) then
+            for _, v in ipairs(j) do
                 full_list[#full_list + 1] = v
             end
-        elseif(j ~= nil) then
+        elseif (j ~= nil) then
             full_list[#full_list + 1] = j
         end
     end
@@ -102,12 +106,11 @@ function M.sync(jobs)
 
     require("anrcy.history_manager").archive(valid_jobs)
 
-    for _,j in ipairs(valid_jobs) do
-
+    for _, j in ipairs(valid_jobs) do
         ---@type string[] | string
         local cmd = job_to_curl(j)
 
-        if(cmd == "" or cmd == nil) then
+        if (cmd == "" or cmd == nil) then
             ui.notify("Job command was empty", vim.log.levels.ERROR)
             break
         end
@@ -125,16 +128,18 @@ function M.sync(jobs)
         local norm = utils.remove_line_endings(data)
         response.data = utils.parse_output(norm)
 
-        if(j.test) then
+        if (j.test) then
             response.test_results = j.test(response.data.payload)
         end
 
         responses[#responses + 1] = response
-
     end
 
     return responses
 end
+
+
+
 
 
 --- Uses vim.fn.jobstart and curl to make an asyncronous http request
@@ -142,16 +147,14 @@ end
 ---@param on_complete fun(data?: anrcy.Response[]) on_complete callback handler
 ---
 function M.async(jobs, on_complete)
-
     local valid_jobs = organize_jobs(jobs)
     require("anrcy.history_manager").archive(valid_jobs)
 
-    for _,j in ipairs(valid_jobs) do
-
+    for _, j in ipairs(valid_jobs) do
         ---@type string[] | string
         local cmd = job_to_curl(j)
 
-        if(cmd == "" or cmd == nil) then
+        if (cmd == "" or cmd == nil) then
             ui.notify("Job " .. j.name .. " command was empty", vim.log.levels.ERROR)
             goto continue
         end
@@ -173,52 +176,50 @@ function M.async(jobs, on_complete)
                 stderr_buffered = true,
 
                 on_stdout = function(_, data, _)
-                    if(next(data) ~= nil and data[1] ~= "") then
-                        for _,v in pairs(data) do
+                    if (next(data) ~= nil and data[1] ~= "") then
+                        for _, v in pairs(data) do
                             response.stdout[#response.stdout + 1] = v
                         end
                     end
-
                 end,
 
-                on_stderr = function (_, data, _)
-                    if(next(data) ~= nil and data[1] ~= "") then
-                        for _,v in pairs(data) do
+                on_stderr = function(_, data, _)
+                    if (next(data) ~= nil and data[1] ~= "") then
+                        for _, v in pairs(data) do
                             response.stderr[#response.stderr + 1] = v
                         end
                     end
                 end,
 
                 on_exit = function(id, _, _)
-
                     local norm = utils.remove_line_endings(response.stdout)
                     response.data = utils.parse_output(norm)
 
-                    if(j.test) then
+                    if (j.test) then
                         response.test_results = j.test(response.data.payload)
                     end
 
                     local modifiedPayload = nil
 
-                    if(j.after) then
+                    if (j.after) then
                         modifiedPayload = j.after(response.data.payload)
-                    elseif(config.opts.global_after) then
+                    elseif (config.opts.global_after) then
                         modifiedPayload = config.opts.global_after(response.data.payload)
                     end
 
                     -- only overwrite the original payload if the modified payload is not nil
                     -- otherwise, just keep the original payload
-                    if(modifiedPayload) then
+                    if (modifiedPayload) then
                         response.data.payload = modifiedPayload
                     end
 
                     completed_jobs[id] = true
                     inprogress_jobs[id] = nil
 
-                    if(next(inprogress_jobs) == nil) then
+                    if (next(inprogress_jobs) == nil) then
                         local responses = {}
 
-                        for _,r in pairs(active_responses) do
+                        for _, r in pairs(active_responses) do
                             table.insert(responses, r)
                         end
 
@@ -234,22 +235,24 @@ function M.async(jobs, on_complete)
         ::continue::
     end
 
-    monitor_progress()
+    local prog = check_progress()
+    ui.notify(prog.run .. " jobs started", "info")
+    monitor_jobs()
 end
+
 
 
 ---@param jobs anrcy.Job[]
 ---
 function M.show_commands_only(jobs)
-    if(jobs == nil) then
+    if (jobs == nil) then
         ui.notify("Job list is nil", vim.log.levels.ERROR)
         return
     end
 
     local lines = {}
 
-    for _,j in ipairs(jobs) do
-
+    for _, j in ipairs(jobs) do
         local request = {
             method = j.method,
             url = j.url,
@@ -258,7 +261,7 @@ function M.show_commands_only(jobs)
             additional_args = j.additional_args,
         }
 
-        if(j.command) then
+        if (j.command) then
             lines[#lines + 1] = j.command
         else
             local cmd = curl.build(request)
@@ -269,7 +272,6 @@ function M.show_commands_only(jobs)
 
     require("anrcy.ui").show_commands(lines)
 end
-
 
 M.clear_jobs = clear_jobs
 

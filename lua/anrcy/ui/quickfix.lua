@@ -30,6 +30,9 @@ end
 
 
 
+-- todo:deprecated: this messes things up to much so we dont use this
+--
+-- fix the quickfix <CR> behaviour because it was acting weird with our nofile buffers
 function M.use_custom_quickfix_swapping()
     vim.api.nvim_create_autocmd("FileType", {
         group = vim.api.nvim_create_augroup("anrcy", { clear = true }),

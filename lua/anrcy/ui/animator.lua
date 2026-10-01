@@ -1,4 +1,6 @@
 
+-- todo: this is unused
+
 local animation = {
     delta_time_ms = 150,
     frames = {
